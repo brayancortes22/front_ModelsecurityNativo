@@ -15,13 +15,16 @@ const DashboardController = {
         currentUserEmail: null,
         currentUserLastLogin: null,
         recentActivityList: null,
-        refreshButton: null
+        refreshButton: null,
+        viewAllActivityButton: null
     },
     
     /**
      * Inicializa el controlador del dashboard
      */
     async init() {
+        console.log('Inicializando Dashboard Controller');
+        
         // Obtener referencias a elementos del DOM
         this.elements.totalUsers = document.getElementById('totalUsers');
         this.elements.totalPersons = document.getElementById('totalPersons');
@@ -33,25 +36,64 @@ const DashboardController = {
         this.elements.currentUserLastLogin = document.getElementById('currentUserLastLogin');
         this.elements.recentActivityList = document.getElementById('recentActivityList');
         this.elements.refreshButton = document.getElementById('refreshDashboard');
+        this.elements.viewAllActivityButton = document.getElementById('viewAllActivity');
         
         // Configurar eventos
         if (this.elements.refreshButton) {
             this.elements.refreshButton.addEventListener('click', () => this.loadDashboardData());
         }
         
-        // Configurar enlaces de navegación
-        document.querySelectorAll('[data-view]').forEach(element => {
-            element.addEventListener('click', (e) => {
+        if (this.elements.viewAllActivityButton) {
+            this.elements.viewAllActivityButton.addEventListener('click', (e) => {
                 e.preventDefault();
-                const view = e.currentTarget.getAttribute('data-view');
-                if (typeof AppController !== 'undefined') {
-                    AppController.loadView(view);
-                }
+                console.log('Ver todas las actividades...');
+                // Aquí podríamos abrir un modal con el historial completo
             });
-        });
+        }
+        
+        // Configurar eventos para los enlaces de navegación
+        this.setupNavigationEvents();
         
         // Cargar datos del dashboard
         await this.loadDashboardData();
+    },
+    
+    /**
+     * Configura los eventos de navegación para los botones "Ver detalles"
+     */
+    setupNavigationEvents() {
+        console.log('Configurando eventos de navegación');
+        
+        // Configurar todos los elementos con data-view para la navegación
+        document.querySelectorAll('[data-view]').forEach(element => {
+            // Usamos una función flecha para mantener el contexto 'this' correcto
+            element.addEventListener('click', (e) => this.handleNavigation(e));
+        });
+    },
+    
+    /**
+     * Manejador de eventos para la navegación
+     */
+    handleNavigation(e) {
+        e.preventDefault();
+        const view = e.currentTarget.getAttribute('data-view');
+        console.log('Navegando a:', view);
+        
+        // Verificar si estamos en el contexto de una SPA o una navegación tradicional
+        if (typeof AppController !== 'undefined' && AppController !== null) {
+            // Navegación SPA con AppController
+            AppController.loadView(view);
+        } else {
+            // Navegación tradicional si AppController no está disponible
+            console.log('AppController no está definido, realizando navegación directa a:', view);
+            try {
+                // Redirigir directamente a la vista
+                window.location.href = `${view}.html`;
+            } catch (error) {
+                console.error('Error al navegar a', view, error);
+                alert(`No se pudo navegar a ${view}`);
+            }
+        }
     },
     
     /**
@@ -69,6 +111,9 @@ const DashboardController = {
             
             // Cargar actividad reciente
             await this.loadRecentActivity();
+            
+            // Configurar nuevamente los eventos de navegación después de actualizar el DOM
+            this.setupNavigationEvents();
             
         } catch (error) {
             console.error('Error al cargar datos del dashboard:', error);
@@ -103,29 +148,53 @@ const DashboardController = {
     },
     
     /**
-     * Carga las estadísticas del sistema
+     * Carga las estadísticas del sistema desde la API
      */
     async loadStatistics() {
         try {
-            // En un entorno real, estas serían llamadas API
-            // Por ahora usamos datos de prueba
+            // Inicializar contadores en cero
+            let userCount = 0;
+            let personCount = 0;
+            let roleCount = 0;
+            let moduleCount = 0;
             
-            // Simular carga
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Obtener conteo de usuarios
+            try {
+                const users = await ApiService.get(API_CONFIG.ENDPOINTS.USER.BASE);
+                userCount = Array.isArray(users) ? users.length : 0;
+            } catch (error) {
+                console.error('Error al obtener usuarios:', error);
+            }
             
-            // Simular conteos
-            const stats = {
-                users: 15,
-                persons: 28,
-                roles: 5,
-                modules: 8
-            };
+            // Obtener conteo de personas
+            try {
+                const persons = await ApiService.get(API_CONFIG.ENDPOINTS.PERSON.BASE);
+                personCount = Array.isArray(persons) ? persons.length : 0;
+            } catch (error) {
+                console.error('Error al obtener personas:', error);
+            }
+            
+            // Obtener conteo de roles
+            try {
+                const roles = await ApiService.get(API_CONFIG.ENDPOINTS.ROL.BASE);
+                roleCount = Array.isArray(roles) ? roles.length : 0;
+            } catch (error) {
+                console.error('Error al obtener roles:', error);
+            }
+            
+            // Obtener conteo de módulos
+            try {
+                const modules = await ApiService.get(API_CONFIG.ENDPOINTS.MODULE.BASE);
+                moduleCount = Array.isArray(modules) ? modules.length : 0;
+            } catch (error) {
+                console.error('Error al obtener módulos:', error);
+            }
             
             // Actualizar interfaz
-            this.elements.totalUsers.textContent = stats.users;
-            this.elements.totalPersons.textContent = stats.persons;
-            this.elements.totalRoles.textContent = stats.roles;
-            this.elements.totalModules.textContent = stats.modules;
+            this.elements.totalUsers.textContent = userCount;
+            this.elements.totalPersons.textContent = personCount;
+            this.elements.totalRoles.textContent = roleCount;
+            this.elements.totalModules.textContent = moduleCount;
             
         } catch (error) {
             console.error('Error al cargar estadísticas:', error);

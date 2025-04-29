@@ -14,55 +14,53 @@ const API_CONFIG = {
     ENDPOINTS: {
         // Autenticación
         AUTH: {
-            LOGIN: '/auth/login',
-            LOGOUT: '/auth/logout',
-            REFRESH: '/auth/refresh',
-            VALIDATE: '/auth/validate'
+            LOGIN: '/Auth/login',
+            LOGOUT: '/Auth/logout',
+            REFRESH: '/Auth/refresh',
+            VALIDATE: '/Auth/validate'
         },
         
         // Usuarios
         USER: {
-            BASE: '/users',
-            BY_ID: (id) => `/users/${id}`,
-            ACTIVATE: (id) => `/users/${id}/activate`,
-            DEACTIVATE: (id) => `/users/${id}/deactivate`,
-            CHANGE_STATUS: (id) => `/users/${id}/status`,
-            CHANGE_PASSWORD: (id) => `/users/${id}/password`
+            BASE: '/User',
+            BY_ID: (id) => `/User/${id}`,
+            ACTIVATE: (id) => `/User/${id}/activate`,
+            DEACTIVATE: (id) => `/User/${id}/soft`,
+            CHANGE_STATUS: (id) => `/User/${id}/status`,
+            CHANGE_PASSWORD: (id) => `/User/${id}/password`
         },
         
         // Personas
         PERSON: {
-            BASE: '/persons',
-            BY_ID: (id) => `/persons/${id}`,
-            ACTIVATE: (id) => `/persons/${id}/activate`,
-            DEACTIVATE: (id) => `/persons/${id}/deactivate`,
-            CHANGE_STATUS: (id) => `/persons/${id}/status`
+            BASE: '/Person',
+            BY_ID: (id) => `/Person/${id}`,
+            ACTIVATE: (id) => `/Person/${id}/activar`,
+            DEACTIVATE: (id) => `/Person/${id}/soft`,
+            CHANGE_STATUS: (id) => `/Person/${id}/status`
         },
         
         // Roles
         ROL: {
-            BASE: '/roles',
-            BY_ID: (id) => `/roles/${id}`,
-            FORMS: (id) => `/roles/${id}/forms`,
-            ACTIVATE: (id) => `/roles/${id}/activate`,
-            DEACTIVATE: (id) => `/roles/${id}/deactivate`
+            BASE: '/Rol',
+            BY_ID: (id) => `/Rol/${id}`,
+            FORMS: (id) => `/RolForm`,
+            ACTIVATE: (id) => `/Rol/${id}/activate`,
+            DEACTIVATE: (id) => `/Rol/soft-delete/${id}`
         },
         
         // Módulos
         MODULE: {
-            BASE: '/modules',
-            BY_ID: (id) => `/modules/${id}`,
-            FORMS: (id) => `/modules/${id}/forms`,
-            ACTIVATE: (id) => `/modules/${id}/activate`,
-            DEACTIVATE: (id) => `/modules/${id}/deactivate`
+            BASE: '/Module',
+            BY_ID: (id) => `/Module/${id}`,
+            DEACTIVATE: (id) => `/Module/${id}/soft`
         },
         
         // Formularios
         FORM: {
-            BASE: '/forms',
-            BY_ID: (id) => `/forms/${id}`,
-            ACTIVATE: (id) => `/forms/${id}/activate`,
-            DEACTIVATE: (id) => `/forms/${id}/deactivate`
+            BASE: '/Form',
+            BY_ID: (id) => `/Form/${id}`,
+            ACTIVATE: (id) => `/Form/${id}/activate`,
+            DEACTIVATE: (id) => `/Form/${id}/soft`
         },
         
         // Registro de cambios

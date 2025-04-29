@@ -91,6 +91,18 @@ const Helpers = {
     },
     
     /**
+     * Muestra u oculta el indicador de carga (spinner)
+     * @param {boolean} show - true para mostrar, false para ocultar
+     */
+    toggleSpinner(show) {
+        if (show) {
+            this.showLoading();
+        } else {
+            this.hideLoading();
+        }
+    },
+    
+    /**
      * Crea un elemento de badge para mostrar el estado
      * @param {boolean} active - Estado de activación
      * @returns {string} HTML del badge

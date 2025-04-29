@@ -66,7 +66,9 @@ const RoleService = {
      * @returns {Promise<Object>} Resultado de la operación
      */
     async activateRole(id) {
-        return ApiService.post(API_CONFIG.ENDPOINTS.ROL.ACTIVATE(id));
+        // Nota: En el Swagger no se encontró un endpoint específico para activar roles
+        // Se podría utilizar PATCH para actualizar el estado
+        return ApiService.patch(API_CONFIG.ENDPOINTS.ROL.BY_ID(id), { active: true });
     },
     
     /**
@@ -75,7 +77,8 @@ const RoleService = {
      * @returns {Promise<Object>} Resultado de la operación
      */
     async deactivateRole(id) {
-        return ApiService.post(API_CONFIG.ENDPOINTS.ROL.DEACTIVATE(id));
+        // Según Swagger, la desactivación de roles se hace con PATCH a /api/Rol/soft-delete/{id}
+        return ApiService.patch(API_CONFIG.ENDPOINTS.ROL.DEACTIVATE(id));
     },
     
     /**
@@ -84,7 +87,8 @@ const RoleService = {
      * @returns {Promise<Array>} Lista de formularios asociados al rol
      */
     async getRoleForms(id) {
-        return ApiService.get(API_CONFIG.ENDPOINTS.ROL.FORMS(id));
+        // Según Swagger, se debe obtener de /api/RolForm filtrando por rolId
+        return ApiService.get(API_CONFIG.ENDPOINTS.ROL.FORMS(), { rolId: id });
     },
     
     /**
@@ -94,6 +98,8 @@ const RoleService = {
      * @returns {Promise<Object>} Relación creada
      */
     async assignFormToRole(roleId, formData) {
-        return ApiService.post(API_CONFIG.ENDPOINTS.ROL.FORMS(roleId), formData);
+        // Aseguramos que el formData incluya el rolId
+        const data = { ...formData, rolId: roleId };
+        return ApiService.post(API_CONFIG.ENDPOINTS.ROL.FORMS(), data);
     }
 };

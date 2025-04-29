@@ -25,18 +25,22 @@ const AppController = {
         this.elements.logoutButton = document.getElementById('btnLogout');
         
         // Evento para enlaces de navegación
-        this.elements.navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const view = e.target.getAttribute('data-view');
-                this.loadView(view);
+        if (this.elements.navLinks) {
+            this.elements.navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const view = e.target.getAttribute('data-view');
+                    this.loadView(view);
+                });
             });
-        });
+        }
         
-        // Evento para botón de cerrar sesión
-        this.elements.logoutButton.addEventListener('click', () => {
-            AuthController.handleLogout();
-        });
+        // Evento para botón de cerrar sesión - verificar que el elemento existe
+        if (this.elements.logoutButton) {
+            this.elements.logoutButton.addEventListener('click', () => {
+                AuthController.handleLogout();
+            });
+        }
         
         // Comprobar autenticación al iniciar
         this.checkAuth();
@@ -194,7 +198,9 @@ const AppController = {
                 AuthController.init();
                 break;
             case CONSTANTS.VIEWS.DASHBOARD:
-                // Inicializar dashboard cuando se implemente
+                if (typeof DashboardController !== 'undefined') {
+                    await DashboardController.init();
+                }
                 break;
             case CONSTANTS.VIEWS.USERS:
                 if (typeof UserController !== 'undefined') {

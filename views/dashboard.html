@@ -4,152 +4,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Dashboard - Model Security</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 
 <body>
+    <!-- Spinner de carga global -->
+    <div id="loadingSpinner" class="loading-overlay d-none">
+        <div class="spinner-container">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2 text-white">Cargando...</p>
+        </div>
+    </div>
 
-
-
-    <div class="container">
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <h1 class="section-title">Dashboard</h1>
-                <p class="text-muted">Panel de control del sistema de seguridad</p>
+    <!-- Modal para mensajes -->
+    <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Mensaje</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="modalMessage">Contenido del mensaje</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Resumen de estadísticas -->
-        <div class="dashboard-stats">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="bi bi-people"></i></div>
-                <div class="stat-value" id="totalUsers">--</div>
-                <div class="stat-title">Usuarios</div>
-                <a href="#" class="btn btn-sm btn-primary mt-3" data-view="users">Ver detalles</a>
+    <!-- Contenedor principal para SPA -->
+    <div id="viewContainer">
+        <!-- Contenido del dashboard -->
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h1 class="section-title">Dashboard</h1>
+                    <p class="text-muted">Panel de control del sistema de seguridad</p>
+                </div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-icon"><i class="bi bi-person-vcard"></i></div>
-                <div class="stat-value" id="totalPersons">--</div>
-                <div class="stat-title">Personas</div>
-                <a href="#" class="btn btn-sm btn-success mt-3" data-view="persons">Ver detalles</a>
+            <!-- Resumen de estadísticas -->
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="bi bi-people"></i></div>
+                    <div class="stat-value" id="totalUsers">--</div>
+                    <div class="stat-title">Usuarios</div>
+                    <a href="#" class="btn btn-sm btn-primary mt-3" data-view="users">Ver detalles</a>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="bi bi-person-vcard"></i></div>
+                    <div class="stat-value" id="totalPersons">--</div>
+                    <div class="stat-title">Personas</div>
+                    <a href="#" class="btn btn-sm btn-success mt-3" data-view="persons">Ver detalles</a>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="bi bi-person-lock"></i></div>
+                    <div class="stat-value" id="totalRoles">--</div>
+                    <div class="stat-title">Roles</div>
+                    <a href="#" class="btn btn-sm btn-warning mt-3" data-view="roles">Ver detalles</a>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="bi bi-grid-3x3-gap"></i></div>
+                    <div class="stat-value" id="totalModules">--</div>
+                    <div class="stat-title">Módulos</div>
+                    <a href="#" class="btn btn-sm btn-danger mt-3" data-view="modules">Ver detalles</a>
+                </div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-icon"><i class="bi bi-person-lock"></i></div>
-                <div class="stat-value" id="totalRoles">--</div>
-                <div class="stat-title">Roles</div>
-                <a href="#" class="btn btn-sm btn-warning mt-3" data-view="roles">Ver detalles</a>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon"><i class="bi bi-grid-3x3-gap"></i></div>
-                <div class="stat-value" id="totalModules">--</div>
-                <div class="stat-title">Módulos</div>
-                <a href="#" class="btn btn-sm btn-danger mt-3" data-view="modules">Ver detalles</a>
-            </div>
-        </div>
-
-        <!-- Usuario actual y Acciones Rápidas -->
-        <div class="row mb-4">
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Información de Usuario</h5>
-                        <span class="badge status-active">Activo</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="user-avatar me-3">
-                                <i class="bi bi-person"></i>
+            <!-- Usuario actual y Acciones Rápidas -->
+            <div class="row mb-4">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Información de Usuario</h5>
+                            <span class="badge status-active">Activo</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="user-avatar me-3">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                                <div>
+                                    <h4 class="mb-1" id="currentUserName">Cargando...</h4>
+                                    <p class="text-muted mb-0" id="currentUserRole">Rol: Cargando...</p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="mb-1" id="currentUserName">Cargando...</h4>
-                                <p class="text-muted mb-0" id="currentUserRole">Rol: Cargando...</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><i class="bi bi-envelope me-2"></i><span id="currentUserEmail">Email:
+                                            Cargando...</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><i class="bi bi-clock-history me-2"></i><span id="currentUserLastLogin">Último
+                                            acceso: Cargando...</span></p>
+                                </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><i class="bi bi-envelope me-2"></i><span id="currentUserEmail">Email:
-                                        Cargando...</span></p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><i class="bi bi-clock-history me-2"></i><span id="currentUserLastLogin">Último
-                                        acceso: Cargando...</span></p>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Acciones Rápidas</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" type="button" data-view="users">
+                                    <i class="bi bi-person-plus me-2"></i> Nuevo Usuario
+                                </button>
+                                <button class="btn btn-success" type="button" data-view="persons">
+                                    <i class="bi bi-person-add me-2"></i> Nueva Persona
+                                </button>
+                                <button class="btn btn-info text-white" type="button" id="refreshDashboard">
+                                    <i class="bi bi-arrow-clockwise me-2"></i> Actualizar Dashboard
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">Acciones Rápidas</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-primary" type="button" data-view="users">
-                                <i class="bi bi-person-plus me-2"></i> Nuevo Usuario
-                            </button>
-                            <button class="btn btn-success" type="button" data-view="persons">
-                                <i class="bi bi-person-add me-2"></i> Nueva Persona
-                            </button>
-                            <button class="btn btn-info text-white" type="button" id="refreshDashboard">
-                                <i class="bi bi-arrow-clockwise me-2"></i> Actualizar Dashboard
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Actividad reciente -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Actividad Reciente</h5>
-                        <span class="badge bg-primary">Últimas 24 horas</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead>
-                                    <tr>
-                                        <th><i class="bi bi-calendar me-2"></i>Fecha</th>
-                                        <th><i class="bi bi-person me-2"></i>Usuario</th>
-                                        <th><i class="bi bi-activity me-2"></i>Acción</th>
-                                        <th><i class="bi bi-table me-2"></i>Tabla</th>
-                                        <th><i class="bi bi-info-circle me-2"></i>Detalles</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="recentActivityList">
-                                    <!-- La actividad reciente se cargará dinámicamente aquí -->
-                                    <tr>
-                                        <td colspan="5" class="text-center">
-                                            <div class="spinner-border spinner-border-sm text-primary me-2"
-                                                role="status">
-                                                <span class="visually-hidden">Cargando...</span>
-                                            </div>
-                                            Cargando actividad reciente...
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+            <!-- Actividad reciente -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Actividad Reciente</h5>
+                            <span class="badge bg-primary">Últimas 24 horas</span>
                         </div>
-                    </div>
-                    <div class="card-footer text-end">
-                        <button class="btn btn-sm btn-outline-primary" id="viewAllActivity">
-                            <i class="bi bi-list-ul me-1"></i> Ver todas las actividades
-                        </button>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th><i class="bi bi-calendar me-2"></i>Fecha</th>
+                                            <th><i class="bi bi-person me-2"></i>Usuario</th>
+                                            <th><i class="bi bi-activity me-2"></i>Acción</th>
+                                            <th><i class="bi bi-table me-2"></i>Tabla</th>
+                                            <th><i class="bi bi-info-circle me-2"></i>Detalles</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentActivityList">
+                                        <!-- La actividad reciente se cargará dinámicamente aquí -->
+                                        <tr>
+                                            <td colspan="5" class="text-center">
+                                                <div class="spinner-border spinner-border-sm text-primary me-2"
+                                                    role="status">
+                                                    <span class="visually-hidden">Cargando...</span>
+                                                </div>
+                                                Cargando actividad reciente...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer text-end">
+                            <button class="btn btn-sm btn-outline-primary" id="viewAllActivity">
+                                <i class="bi bi-list-ul me-1"></i> Ver todas las actividades
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
     <!-- JavaScript Libraries desde CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -159,12 +189,16 @@
     <script src="../js/api/api-config.js"></script>
     <script src="../js/api/api-service.js"></script>
     <script src="../js/api/auth-service.js"></script>
-    <script src="../js/api/role-service.js"></script>
-    <script src="../js/controllers/role-controller.js"></script>
+    <script src="../js/controllers/app-controller.js"></script>
+    <script src="../js/controllers/dashboard-controller.js"></script>
     <script>
         // Inicializar controlador cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
-            RoleController.init();
+            // Inicializar AppController para habilitar la navegación SPA completa
+            AppController.init();
+            
+            // Luego inicializar el controlador del dashboard
+            DashboardController.init();
         });
     </script>
 </body>
