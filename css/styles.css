@@ -1,0 +1,165 @@
+/* Estilos generales para ModelSecurity */
+
+/* Variables de color */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+}
+
+/* Estilos generales */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+footer {
+    flex-shrink: 0;
+    margin-top: auto;
+}
+
+/* Estilos para la barra de navegación */
+.navbar-brand {
+    font-weight: bold;
+}
+
+.user-info {
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+/* Estilos para tarjetas y paneles */
+.card {
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-weight: bold;
+}
+
+/* Estilos para formularios */
+.form-label {
+    font-weight: 500;
+}
+
+.required-field::after {
+    content: " *";
+    color: var(--danger-color);
+}
+
+/* Estilos para tablas */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table th {
+    font-weight: 600;
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Estilos para botones de acción en tablas */
+.btn-group-sm .btn {
+    margin-right: 2px;
+}
+
+.btn-group-sm .btn:last-child {
+    margin-right: 0;
+}
+
+/* Estilos para la página de login */
+.login-container {
+    max-width: 400px;
+    margin: 50px auto;
+}
+
+/* Estilos para indicadores de carga */
+#loadingSpinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para el dashboard */
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card .stat-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.stat-card .stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.stat-card .stat-title {
+    color: var(--secondary-color);
+}
+
+/* Estilos para badges */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+/* Estilos para mensajes de error/éxito */
+.alert {
+    margin-bottom: 1rem;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+}
