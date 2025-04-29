@@ -19,7 +19,25 @@ const AppController = {
      * Inicializa el controlador de la aplicación
      */
     init() {
+        console.log('Inicializando AppController...');
         this.elements.viewContainer = document.getElementById('viewContainer');
+        
+        // Verificar si el viewContainer existe
+        if (!this.elements.viewContainer) {
+            console.warn('No se encontró el elemento viewContainer en el DOM');
+            // Intentar buscar por selector alternativo - puede haber un contenedor con otra clase o ID
+            const alternativeContainer = document.querySelector('.view-container') || 
+                                       document.querySelector('main .container') ||
+                                       document.querySelector('main');
+            
+            if (alternativeContainer) {
+                console.log('Se encontró un contenedor alternativo:', alternativeContainer);
+                this.elements.viewContainer = alternativeContainer;
+            }
+        } else {
+            console.log('viewContainer inicializado correctamente');
+        }
+        
         this.elements.navLinks = document.querySelectorAll('.nav-link[data-view]');
         this.elements.userInfo = document.getElementById('currentUser');
         this.elements.logoutButton = document.getElementById('btnLogout');
@@ -27,11 +45,10 @@ const AppController = {
         // Evento para enlaces de navegación
         if (this.elements.navLinks) {
             this.elements.navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const view = e.target.getAttribute('data-view');
-                    this.loadView(view);
-                });
+                // Eliminar cualquier listener previo para evitar duplicados
+                link.removeEventListener('click', this.handleNavigation);
+                // Usar una función flecha para mantener el contexto 'this' correcto
+                link.addEventListener('click', (e) => this.handleNavigation(e));
             });
         }
         
@@ -44,6 +61,16 @@ const AppController = {
         
         // Comprobar autenticación al iniciar
         this.checkAuth();
+    },
+    
+    /**
+     * Maneja la navegación desde enlaces del menú
+     */
+    handleNavigation(e) {
+        e.preventDefault();
+        const view = e.target.getAttribute('data-view');
+        console.log('AppController: Navegando a vista:', view);
+        this.loadView(view);
     },
     
     /**
@@ -87,16 +114,27 @@ const AppController = {
         const user = AuthService.getCurrentUser();
         
         if (user) {
-            this.elements.userInfo.textContent = user.username || 'Usuario';
-            this.elements.logoutButton.classList.remove('d-none');
+            // Verificar que los elementos existan antes de modificarlos
+            if (this.elements.userInfo) {
+                this.elements.userInfo.textContent = user.username || 'Usuario';
+            }
+            
+            if (this.elements.logoutButton) {
+                this.elements.logoutButton.classList.remove('d-none');
+            }
             
             // Mostrar barra de navegación
             document.querySelectorAll('.navbar-nav').forEach(nav => {
                 nav.classList.remove('d-none');
             });
         } else {
-            this.elements.userInfo.textContent = 'Usuario no autenticado';
-            this.elements.logoutButton.classList.add('d-none');
+            if (this.elements.userInfo) {
+                this.elements.userInfo.textContent = 'Usuario no autenticado';
+            }
+            
+            if (this.elements.logoutButton) {
+                this.elements.logoutButton.classList.add('d-none');
+            }
             
             // Ocultar barra de navegación
             document.querySelectorAll('.navbar-nav').forEach(nav => {
@@ -120,6 +158,26 @@ const AppController = {
         
         try {
             Helpers.toggleSpinner(true);
+            
+            // Verificar si el viewContainer está inicializado
+            if (!this.elements.viewContainer) {
+                console.warn('viewContainer no está inicializado, intentando encontrarlo nuevamente');
+                this.elements.viewContainer = document.getElementById('viewContainer');
+                
+                if (!this.elements.viewContainer) {
+                    // Intentar buscar por selector alternativo
+                    const alternativeContainer = document.querySelector('.view-container') || 
+                                              document.querySelector('main .container') ||
+                                              document.querySelector('main');
+                    
+                    if (alternativeContainer) {
+                        console.log('Se encontró un contenedor alternativo:', alternativeContainer);
+                        this.elements.viewContainer = alternativeContainer;
+                    } else {
+                        throw new Error('No se pudo encontrar el contenedor de vistas en la página actual');
+                    }
+                }
+            }
             
             // Limpiar contenedor de vista
             this.elements.viewContainer.innerHTML = '';
@@ -158,7 +216,12 @@ const AppController = {
         
         // Para otras vistas, cargar desde archivos
         try {
-            const response = await fetch(`views/${viewName}.html`);
+            // Verificar si estamos en la ruta correcta
+            const baseUrl = window.location.pathname.includes('/views/') 
+                ? './' // Si ya estamos en /views/, usar ruta relativa
+                : 'views/'; // Si no, usar la carpeta views
+            
+            const response = await fetch(`${baseUrl}${viewName}.html`);
             
             if (!response.ok) {
                 throw new Error(`Error al cargar la vista ${viewName}`);

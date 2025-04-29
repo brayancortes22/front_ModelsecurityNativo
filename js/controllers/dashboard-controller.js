@@ -16,7 +16,8 @@ const DashboardController = {
         currentUserLastLogin: null,
         recentActivityList: null,
         refreshButton: null,
-        viewAllActivityButton: null
+        viewAllActivityButton: null,
+        viewContainer: null // Añadimos esta propiedad para manejar el contenedor de vistas
     },
     
     /**
@@ -37,6 +38,33 @@ const DashboardController = {
         this.elements.recentActivityList = document.getElementById('recentActivityList');
         this.elements.refreshButton = document.getElementById('refreshDashboard');
         this.elements.viewAllActivityButton = document.getElementById('viewAllActivity');
+        this.elements.viewContainer = document.getElementById('viewContainer');
+        
+        // Inicializar AppController si existe
+        if (typeof AppController !== 'undefined' && AppController !== null) {
+            // Inicializar el AppController completamente
+            try {
+                console.log('Inicializando AppController desde DashboardController');
+                
+                // Asegurarnos de que AppController tenga sus elementos inicializados
+                if (!AppController.init) {
+                    console.warn('AppController no tiene método init');
+                } else {
+                    // Llamamos al método init de AppController para asegurar la inicialización de sus elementos
+                    AppController.init();
+                    console.log('AppController inicializado correctamente desde DashboardController');
+                }
+            } catch (error) {
+                console.error('Error al inicializar AppController desde DashboardController:', error);
+                
+                // Si falla la inicialización completa, al menos aseguramos que el viewContainer esté disponible
+                if (!AppController.elements || !AppController.elements.viewContainer) {
+                    console.log('Configurando manualmente el viewContainer en AppController');
+                    AppController.elements = AppController.elements || {};
+                    AppController.elements.viewContainer = document.getElementById('viewContainer');
+                }
+            }
+        }
         
         // Configurar eventos
         if (this.elements.refreshButton) {
@@ -66,7 +94,7 @@ const DashboardController = {
         
         // Configurar todos los elementos con data-view para la navegación
         document.querySelectorAll('[data-view]').forEach(element => {
-            // Usamos una función flecha para mantener el contexto 'this' correcto
+            element.removeEventListener('click', (e) => this.handleNavigation(e)); // Eliminar listeners previos
             element.addEventListener('click', (e) => this.handleNavigation(e));
         });
     },
@@ -77,22 +105,86 @@ const DashboardController = {
     handleNavigation(e) {
         e.preventDefault();
         const view = e.currentTarget.getAttribute('data-view');
-        console.log('Navegando a:', view);
+        console.log('DashboardController: Navegando a vista:', view);
         
         // Verificar si estamos en el contexto de una SPA o una navegación tradicional
         if (typeof AppController !== 'undefined' && AppController !== null) {
-            // Navegación SPA con AppController
-            AppController.loadView(view);
+            try {
+                // Verificar el estado actual del AppController
+                if (!AppController.elements || !AppController.elements.viewContainer) {
+                    console.log('viewContainer no está inicializado en AppController, intentando reinicializarlo');
+                    
+                    // Reintentar inicializar el AppController
+                    if (typeof AppController.init === 'function') {
+                        AppController.init();
+                    } else {
+                        // Inicialización manual como fallback
+                        AppController.elements = AppController.elements || {};
+                        AppController.elements.viewContainer = document.getElementById('viewContainer');
+                    }
+                    
+                    // Verificar si la inicialización fue exitosa
+                    if (!AppController.elements.viewContainer) {
+                        throw new Error('No se pudo inicializar el viewContainer en AppController');
+                    }
+                }
+                
+                // Agregar logs de debug para ayudar a diagnosticar el problema
+                console.log('Estado antes de navegar:', {
+                    'AppController.elements': AppController.elements,
+                    'AppController.elements.viewContainer': AppController.elements.viewContainer,
+                    'AppController.loadView': typeof AppController.loadView
+                });
+                
+                // Navegación SPA con AppController
+                if (typeof AppController.loadView === 'function') {
+                    AppController.loadView(view);
+                } else {
+                    throw new Error('AppController.loadView no es una función');
+                }
+            } catch (error) {
+                console.error('Error al intentar navegar con AppController:', error);
+                // Mostrar mensaje de error en consola y UI para ayudar en la depuración
+                console.warn('Intentando navegación alternativa...');
+                Helpers.showError('Error de navegación: ' + error.message);
+                
+                // Fallback a navegación directa
+                this.fallbackNavigation(view);
+            }
         } else {
             // Navegación tradicional si AppController no está disponible
-            console.log('AppController no está definido, realizando navegación directa a:', view);
-            try {
-                // Redirigir directamente a la vista
-                window.location.href = `${view}.html`;
-            } catch (error) {
-                console.error('Error al navegar a', view, error);
-                alert(`No se pudo navegar a ${view}`);
+            console.warn('AppController no está disponible, usando navegación tradicional');
+            this.fallbackNavigation(view);
+        }
+    },
+    
+    /**
+     * Navegación alternativa cuando AppController no está disponible
+     */
+    fallbackNavigation(view) {
+        console.log('Realizando navegación directa a:', view);
+        try {
+            // Determinar la ruta base según la ubicación actual
+            const currentPath = window.location.pathname;
+            
+            // Verificar si ya estamos en la carpeta views o en una subcarpeta
+            let viewUrl;
+            if (currentPath.includes('/views/')) {
+                // Si ya estamos en views, usar una ruta relativa al mismo nivel
+                viewUrl = `./${view}.html`;
+            } else if (currentPath.endsWith('/') || currentPath.endsWith('/index.html')) {
+                // Si estamos en la raíz o en index.html
+                viewUrl = `./views/${view}.html`;
+            } else {
+                // En cualquier otro caso, asumir que necesitamos ir hacia arriba y luego a views
+                viewUrl = `./views/${view}.html`;
             }
+            
+            console.log(`Redirigiendo a: ${viewUrl}`);
+            window.location.href = viewUrl;
+        } catch (error) {
+            console.error('Error al navegar a', view, error);
+            alert(`No se pudo navegar a ${view}: ${error.message}`);
         }
     },
     
@@ -127,23 +219,45 @@ const DashboardController = {
      * Carga la información del usuario actual
      */
     loadCurrentUserInfo() {
-        const user = AuthService.getCurrentUser();
-        
-        if (user) {
-            this.elements.currentUserName.textContent = user.username || 'Usuario';
-            this.elements.currentUserEmail.textContent = `Email: ${user.email || 'No disponible'}`;
+        try {
+            const user = AuthService.getCurrentUser();
             
-            // Obtener información de roles (simulada por ahora)
-            this.elements.currentUserRole.textContent = `Rol: ${user.rol || 'Usuario estándar'}`;
-            
-            // Fecha de último acceso (simulada)
-            const now = new Date();
-            this.elements.currentUserLastLogin.textContent = `Último acceso: ${Helpers.formatDate(now)}`;
-        } else {
-            this.elements.currentUserName.textContent = 'Usuario no identificado';
-            this.elements.currentUserRole.textContent = 'Rol: No disponible';
-            this.elements.currentUserEmail.textContent = 'Email: No disponible';
-            this.elements.currentUserLastLogin.textContent = 'Último acceso: No disponible';
+            if (user) {
+                // Verificar que los elementos existan antes de usarlos
+                if (this.elements.currentUserName) {
+                    this.elements.currentUserName.textContent = user.username || 'Usuario';
+                }
+                
+                if (this.elements.currentUserEmail) {
+                    this.elements.currentUserEmail.textContent = `Email: ${user.email || 'No disponible'}`;
+                }
+                
+                if (this.elements.currentUserRole) {
+                    // Obtener información de roles (simulada por ahora)
+                    this.elements.currentUserRole.textContent = `Rol: ${user.rol || 'Usuario estándar'}`;
+                }
+                
+                if (this.elements.currentUserLastLogin) {
+                    // Fecha de último acceso (simulada)
+                    const now = new Date();
+                    this.elements.currentUserLastLogin.textContent = `Último acceso: ${Helpers.formatDate(now)}`;
+                }
+            } else {
+                if (this.elements.currentUserName) {
+                    this.elements.currentUserName.textContent = 'Usuario no identificado';
+                }
+                if (this.elements.currentUserRole) {
+                    this.elements.currentUserRole.textContent = 'Rol: No disponible';
+                }
+                if (this.elements.currentUserEmail) {
+                    this.elements.currentUserEmail.textContent = 'Email: No disponible';
+                }
+                if (this.elements.currentUserLastLogin) {
+                    this.elements.currentUserLastLogin.textContent = 'Último acceso: No disponible';
+                }
+            }
+        } catch (error) {
+            console.error('Error al cargar información del usuario:', error);
         }
     },
     
@@ -190,11 +304,22 @@ const DashboardController = {
                 console.error('Error al obtener módulos:', error);
             }
             
-            // Actualizar interfaz
-            this.elements.totalUsers.textContent = userCount;
-            this.elements.totalPersons.textContent = personCount;
-            this.elements.totalRoles.textContent = roleCount;
-            this.elements.totalModules.textContent = moduleCount;
+            // Actualizar interfaz - verificar que los elementos existan
+            if (this.elements.totalUsers) {
+                this.elements.totalUsers.textContent = userCount;
+            }
+            
+            if (this.elements.totalPersons) {
+                this.elements.totalPersons.textContent = personCount;
+            }
+            
+            if (this.elements.totalRoles) {
+                this.elements.totalRoles.textContent = roleCount;
+            }
+            
+            if (this.elements.totalModules) {
+                this.elements.totalModules.textContent = moduleCount;
+            }
             
         } catch (error) {
             console.error('Error al cargar estadísticas:', error);
@@ -206,10 +331,22 @@ const DashboardController = {
      * Muestra mensaje de error en los contadores de estadísticas
      */
     showStatisticsError() {
-        this.elements.totalUsers.textContent = 'Error';
-        this.elements.totalPersons.textContent = 'Error';
-        this.elements.totalRoles.textContent = 'Error';
-        this.elements.totalModules.textContent = 'Error';
+        // Verificar que los elementos existan antes de modificarlos
+        if (this.elements.totalUsers) {
+            this.elements.totalUsers.textContent = 'Error';
+        }
+        
+        if (this.elements.totalPersons) {
+            this.elements.totalPersons.textContent = 'Error';
+        }
+        
+        if (this.elements.totalRoles) {
+            this.elements.totalRoles.textContent = 'Error';
+        }
+        
+        if (this.elements.totalModules) {
+            this.elements.totalModules.textContent = 'Error';
+        }
     },
     
     /**
