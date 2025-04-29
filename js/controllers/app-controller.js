@@ -7,6 +7,9 @@ const AppController = {
     // Vista actual
     currentView: null,
     
+    // Historial de navegación
+    navigationHistory: [],
+    
     // Elementos del DOM
     elements: {
         viewContainer: null,
@@ -179,6 +182,16 @@ const AppController = {
                 }
             }
             
+            // Guardar vista actual en el historial si existe
+            if (this.currentView && this.currentView !== CONSTANTS.VIEWS.LOGIN) {
+                this.navigationHistory.push(this.currentView);
+                // Limitar el historial a 10 entradas para evitar que crezca demasiado
+                if (this.navigationHistory.length > 10) {
+                    this.navigationHistory.shift();
+                }
+                console.log('Historial de navegación actualizado:', this.navigationHistory);
+            }
+            
             // Limpiar contenedor de vista
             this.elements.viewContainer.innerHTML = '';
             
@@ -194,11 +207,80 @@ const AppController = {
             
             // Actualizar vista actual
             this.currentView = viewName;
+            
+            // Configurar los botones de volver atrás si existen
+            this.setupBackButtons();
         } catch (error) {
             console.error('Error al cargar la vista:', error);
             Helpers.showError('Error al cargar la vista: ' + error.message);
         } finally {
             Helpers.toggleSpinner(false);
+        }
+    },
+    
+    /**
+     * Configura los botones de volver atrás en la vista actual
+     */
+    setupBackButtons() {
+        const backButtons = document.querySelectorAll('.btn-back');
+        backButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                this.goBack();
+            });
+        });
+    },
+    
+    /**
+     * Navega a la vista anterior en el historial
+     */
+    goBack() {
+        if (this.navigationHistory.length > 0) {
+            const previousView = this.navigationHistory.pop();
+            console.log('Volviendo a la vista anterior:', previousView);
+            // Cargar vista anterior sin añadirla al historial
+            this.loadViewWithoutHistory(previousView);
+        } else {
+            console.log('No hay historial para volver atrás, redirigiendo al dashboard');
+            this.loadView(CONSTANTS.VIEWS.DASHBOARD);
+        }
+    },
+    
+    /**
+     * Carga una vista sin añadirla al historial de navegación
+     * @param {string} viewName - Nombre de la vista a cargar
+     */
+    async loadViewWithoutHistory(viewName) {
+        const tempHistory = [...this.navigationHistory];
+        this.navigationHistory = []; // Temporalmente vaciar el historial
+        
+        try {
+            Helpers.toggleSpinner(true);
+            
+            // Limpiar contenedor de vista
+            this.elements.viewContainer.innerHTML = '';
+            
+            // Cargar template de la vista
+            const viewTemplate = await this.fetchViewTemplate(viewName);
+            this.elements.viewContainer.innerHTML = viewTemplate;
+            
+            // Actualizar enlaces activos
+            this.updateActiveNavLink(viewName);
+            
+            // Inicializar controlador específico de la vista
+            await this.initViewController(viewName);
+            
+            // Actualizar vista actual
+            this.currentView = viewName;
+            
+            // Configurar los botones de volver atrás si existen
+            this.setupBackButtons();
+        } catch (error) {
+            console.error('Error al cargar la vista:', error);
+            Helpers.showError('Error al cargar la vista: ' + error.message);
+        } finally {
+            Helpers.toggleSpinner(false);
+            // Restaurar el historial sin la última entrada
+            this.navigationHistory = tempHistory;
         }
     },
     
