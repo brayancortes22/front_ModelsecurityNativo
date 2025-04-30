@@ -83,32 +83,36 @@ const UserController = {
     },
     
     /**
-     * Carga la lista de usuarios desde la API
+     * Carga la lista de usuarios desde la API con mensajes de depuración
      */
     async loadUsers() {
         try {
+            console.log('UserController: Iniciando carga de usuarios...');
             Helpers.showLoading();
-            this.state.users = await UserService.getAllUsers();
+            this.state.users = await UserService.getAll();
+            console.log('UserController: Usuarios cargados correctamente:', this.state.users);
             Helpers.hideLoading();
         } catch (error) {
             Helpers.hideLoading();
+            console.error('UserController: Error al cargar los usuarios:', error);
             Helpers.showError('Error al cargar los usuarios', error.message);
-            console.error('Error loading users:', error);
         }
     },
-    
+
     /**
-     * Carga la lista de personas disponibles
+     * Carga la lista de personas disponibles con mensajes de depuración
      */
     async loadPersons() {
         try {
+            console.log('UserController: Iniciando carga de personas...');
             Helpers.showLoading();
             this.state.persons = await PersonService.getAllPersons();
+            console.log('UserController: Personas cargadas correctamente:', this.state.persons);
             Helpers.hideLoading();
         } catch (error) {
             Helpers.hideLoading();
+            console.error('UserController: Error al cargar las personas:', error);
             Helpers.showError('Error al cargar las personas', error.message);
-            console.error('Error loading persons:', error);
         }
     },
     

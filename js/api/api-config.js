@@ -5,7 +5,7 @@
 
 const API_CONFIG = {
     // URL base de la API
-    BASE_URL: 'http://localhost:7008/api',
+    BASE_URL: 'https://localhost:7009/api',
     
     // Timeout para peticiones en milisegundos
     TIMEOUT: 30000,
@@ -26,33 +26,30 @@ const API_CONFIG = {
             BY_ID: (id) => `/User/${id}`,
             ACTIVATE: (id) => `/User/${id}/activate`,
             DEACTIVATE: (id) => `/User/${id}/soft`,
-            CHANGE_STATUS: (id) => `/User/${id}/status`,
-            CHANGE_PASSWORD: (id) => `/User/${id}/password`
         },
         
         // Personas
         PERSON: {
             BASE: '/Person',
             BY_ID: (id) => `/Person/${id}`,
-            ACTIVATE: (id) => `/Person/${id}/activar`,
+            ACTIVATE: (id) => `/Person/${id}/activate`,
             DEACTIVATE: (id) => `/Person/${id}/soft`,
-            CHANGE_STATUS: (id) => `/Person/${id}/status`
         },
         
         // Roles
         ROL: {
             BASE: '/Rol',
             BY_ID: (id) => `/Rol/${id}`,
-            FORMS: (id) => `/RolForm`,
             ACTIVATE: (id) => `/Rol/${id}/activate`,
-            DEACTIVATE: (id) => `/Rol/soft-delete/${id}`
+            DEACTIVATE: (id) => `/Rol/soft-delete/${id}`,
         },
         
         // Módulos
         MODULE: {
             BASE: '/Module',
             BY_ID: (id) => `/Module/${id}`,
-            DEACTIVATE: (id) => `/Module/${id}/soft`
+            ACTIVATE: (id) => `/Module/${id}/activate`,
+            DEACTIVATE: (id) => `/Module/${id}/soft`,
         },
         
         // Formularios
@@ -60,7 +57,7 @@ const API_CONFIG = {
             BASE: '/Form',
             BY_ID: (id) => `/Form/${id}`,
             ACTIVATE: (id) => `/Form/${id}/activate`,
-            DEACTIVATE: (id) => `/Form/${id}/soft`
+            DEACTIVATE: (id) => `/Form/${id}/soft`,
         },
         
         // Registro de cambios

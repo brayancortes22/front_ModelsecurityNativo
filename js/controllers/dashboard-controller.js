@@ -108,25 +108,32 @@ const DashboardController = {
      * Configura los eventos de navegación para los botones "Ver detalles"
      */
     setupNavigationEvents() {
-        // Evitar configurar los mismos eventos múltiples veces
-        if (this._eventsConfigured) {
-            console.log('Eventos de navegación ya configurados, omitiendo');
-            return;
-        }
-        
-        console.log('Configurando eventos de navegación');
-        
+        console.log('Reconfigurando eventos de navegación');
+
         // Configurar todos los elementos con data-view para la navegación
         document.querySelectorAll('[data-view]').forEach(element => {
-            // Remover cualquier listener previo (para estar seguros)
+            // Remover cualquier listener previo para evitar duplicados
             element.removeEventListener('click', this._navigationHandler);
-            
+
             // Usar una función nombrada para poder removerla después si es necesario
-            this._navigationHandler = (e) => this.handleNavigation(e);
+            this._navigationHandler = (e) => {
+                e.preventDefault();
+                const view = e.currentTarget.getAttribute('data-view');
+                console.log('DashboardController: Navegando a vista:', view);
+
+                // Verificar si AppController está disponible
+                if (typeof AppController !== 'undefined' && AppController !== null) {
+                    AppController.loadView(view);
+                } else {
+                    console.warn('AppController no está disponible, usando navegación alternativa');
+                    this.fallbackNavigation(view);
+                }
+            };
+
             element.addEventListener('click', this._navigationHandler);
         });
-        
-        this._eventsConfigured = true;
+
+        console.log('Eventos de navegación reconfigurados correctamente');
     },
     
     /**

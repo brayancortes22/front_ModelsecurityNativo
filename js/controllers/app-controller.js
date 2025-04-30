@@ -81,32 +81,28 @@ const AppController = {
      */
     async checkAuth() {
         const isLoggedIn = AuthService.isAuthenticated();
-        
+
         if (isLoggedIn) {
-            // Verificar que el token sea válido
-            const isTokenValid = await AuthService.validateToken();
-            
-            if (isTokenValid) {
-                this.updateUserInfo();
-                // Cargar vista inicial para usuario autenticado
-                this.loadView(CONSTANTS.VIEWS.DASHBOARD);
-                return;
-            } else {
-                // Token no válido, intentar renovar
-                const tokenRefreshed = await AuthService.refreshToken();
-                
-                if (tokenRefreshed) {
+            try {
+                // Verificar que el token sea válido
+                const isTokenValid = await AuthService.validateToken();
+
+                if (isTokenValid) {
                     this.updateUserInfo();
+                    // Cargar vista inicial para usuario autenticado
                     this.loadView(CONSTANTS.VIEWS.DASHBOARD);
                     return;
+                } else {
+                    console.warn('Token inválido, redirigiendo al login');
                 }
-                
-                // Si no se pudo renovar, mostrar login
-                AuthService.clearAuth();
+            } catch (error) {
+                console.error('Error al validar el token:', error);
             }
         }
-        
+
         // Usuario no autenticado o token inválido
+        console.warn('Usuario no autenticado, redirigiendo al login');
+        AuthService.clearAuth();
         this.loadView(CONSTANTS.VIEWS.LOGIN);
     },
     
@@ -136,12 +132,12 @@ const AppController = {
             }
             
             if (this.elements.logoutButton) {
-                this.elements.logoutButton.classList.add('d-none');
+                this.elements.logoutButton.classList.add('');
             }
             
             // Ocultar barra de navegación
             document.querySelectorAll('.navbar-nav').forEach(nav => {
-                nav.classList.add('d-none');
+                nav.classList.add('');
             });
         }
     },
@@ -224,9 +220,16 @@ const AppController = {
     setupBackButtons() {
         const backButtons = document.querySelectorAll('.btn-back');
         backButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                this.goBack();
-            });
+            // Remover cualquier listener previo para evitar duplicados
+            button.removeEventListener('click', this._backButtonHandler);
+
+            // Usar una función nombrada para poder removerla después si es necesario
+            this._backButtonHandler = () => {
+                // Recargar la página para reinicializar todo
+                window.location.reload();
+            };
+
+            button.addEventListener('click', this._backButtonHandler);
         });
     },
     
