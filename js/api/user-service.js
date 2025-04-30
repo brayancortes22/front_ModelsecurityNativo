@@ -180,5 +180,33 @@ const UserService = {
             console.error(`Error al asignar roles al usuario con ID ${userId}:`, error);
             throw error;
         }
-    }
+    },
+
+    /**
+     * Desactiva un usuario
+     * @param {number} id - ID del usuario
+     * @returns {Promise<Object>} Resultado de la operación
+     */
+    async deactivateUser(id) {
+        try {
+            return await ApiService.patch(API_CONFIG.ENDPOINTS.USER.DEACTIVATE(id));
+        } catch (error) {
+            console.error(`Error al desactivar el usuario con ID ${id}:`, error);
+            throw error;
+        }
+    },
+
+    /**
+     * Obtiene un usuario específico por su ID
+     * @param {number} id - ID del usuario
+     * @returns {Promise<Object>} Datos del usuario
+     */
+    async getUserById(id) {
+        try {
+            return await ApiService.get(API_CONFIG.ENDPOINTS.USER.BY_ID(id));
+        } catch (error) {
+            console.error(`Error al obtener el usuario con ID ${id}:`, error);
+            throw error;
+        }
+    },
 };

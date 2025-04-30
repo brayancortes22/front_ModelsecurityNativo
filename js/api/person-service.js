@@ -19,6 +19,19 @@ const PersonService = {
     },
     
     /**
+     * Obtiene todas las personas
+     * @returns {Promise<Array>} Lista de personas
+     */
+    async getAllPersons() {
+        try {
+            return await ApiService.get(API_CONFIG.ENDPOINTS.PERSON.BASE);
+        } catch (error) {
+            console.error('Error al obtener las personas:', error);
+            throw error;
+        }
+    },
+
+    /**
      * Obtiene una persona por su ID
      * @param {number} id - ID de la persona
      * @returns {Promise<Object>} Datos de la persona
