@@ -120,6 +120,44 @@ const ApiService = {
     },
     
     /**
+     * Realiza una petición GET con soporte de caché
+     * @param {string} url - URL a la que realizar la petición
+     * @param {Object} params - Parámetros de la petición
+     * @param {boolean} useCache - Indica si se debe usar la caché
+     * @param {number} cacheExpiry - Tiempo de expiración de la caché en ms
+     * @returns {Promise<any>} Respuesta de la API
+     */
+    async getCached(url, params = {}, useCache = true, cacheExpiry) {
+        // Si no se usa caché, hacer petición normal
+        if (!useCache) {
+            return this.get(url, params);
+        }
+        
+        // Construir clave de caché
+        let urlWithParams = url;
+        const queryParams = new URLSearchParams();
+        
+        for (const key in params) {
+            if (params[key] !== undefined && params[key] !== null) {
+                queryParams.append(key, params[key]);
+            }
+        }
+        
+        if (Object.keys(params).length > 0) {
+            urlWithParams = `${url}?${queryParams.toString()}`;
+        }
+        
+        const cacheKey = `GET:${urlWithParams}`;
+        
+        // Usar CacheService para obtener datos
+        return CacheService.get(
+            cacheKey,
+            () => this.get(url, params),
+            cacheExpiry
+        );
+    },
+    
+    /**
      * Realiza una petición POST
      * @param {string} url - URL a la que realizar la petición
      * @param {Object} data - Datos a enviar

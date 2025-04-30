@@ -5,7 +5,7 @@
 
 const API_CONFIG = {
     // URL base de la API
-    BASE_URL: 'http://localhost:5187/api',
+    BASE_URL: 'http://localhost:7008/api',
     
     // Timeout para peticiones en milisegundos
     TIMEOUT: 30000,

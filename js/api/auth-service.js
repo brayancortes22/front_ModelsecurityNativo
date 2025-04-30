@@ -42,6 +42,12 @@ const AuthService = {
             console.warn('Error al cerrar sesión en el servidor:', error);
             // Continuar con el cierre de sesión local aunque falle en el servidor
         } finally {
+            // Invalidar caché para asegurar datos frescos en la próxima sesión
+            if (typeof CacheService !== 'undefined') {
+                CacheService.invalidateAll();
+                console.log('Caché invalidada al cerrar sesión');
+            }
+            
             // Limpiar almacenamiento local
             this.clearAuth();
         }

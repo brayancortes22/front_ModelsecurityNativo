@@ -20,11 +20,30 @@ const DashboardController = {
         viewContainer: null // Añadimos esta propiedad para manejar el contenedor de vistas
     },
     
+    // Control de estado para evitar inicializaciones y cargas repetitivas
+    isInitialized: false,
+    isLoadingData: false,
+    lastDataLoad: 0,
+    dataRefreshInterval: 60000, // 1 minuto entre actualizaciones automáticas
+    _eventsConfigured: false,
+    
     /**
      * Inicializa el controlador del dashboard
      */
     async init() {
         console.log('Inicializando Dashboard Controller');
+        
+        // Si ya está inicializado, solo actualizar datos si es necesario
+        if (this.isInitialized) {
+            console.log('Dashboard ya inicializado, omitiendo inicialización');
+            
+            // Solo actualizar datos si ha pasado el intervalo definido
+            const now = Date.now();
+            if (now - this.lastDataLoad > this.dataRefreshInterval) {
+                this.loadDashboardData();
+            }
+            return;
+        }
         
         // Obtener referencias a elementos del DOM
         this.elements.totalUsers = document.getElementById('totalUsers');
@@ -40,9 +59,8 @@ const DashboardController = {
         this.elements.viewAllActivityButton = document.getElementById('viewAllActivity');
         this.elements.viewContainer = document.getElementById('viewContainer');
         
-        // Inicializar AppController si existe
-        if (typeof AppController !== 'undefined' && AppController !== null) {
-            // Inicializar el AppController completamente
+        // Inicializar AppController si existe, sólo una vez
+        if (typeof AppController !== 'undefined' && AppController !== null && !AppController.elements.viewContainer) {
             try {
                 console.log('Inicializando AppController desde DashboardController');
                 
@@ -56,19 +74,16 @@ const DashboardController = {
                 }
             } catch (error) {
                 console.error('Error al inicializar AppController desde DashboardController:', error);
-                
-                // Si falla la inicialización completa, al menos aseguramos que el viewContainer esté disponible
-                if (!AppController.elements || !AppController.elements.viewContainer) {
-                    console.log('Configurando manualmente el viewContainer en AppController');
-                    AppController.elements = AppController.elements || {};
-                    AppController.elements.viewContainer = document.getElementById('viewContainer');
-                }
             }
         }
         
         // Configurar eventos
         if (this.elements.refreshButton) {
-            this.elements.refreshButton.addEventListener('click', () => this.loadDashboardData());
+            this.elements.refreshButton.addEventListener('click', () => {
+                // Invalidar caché al solicitar actualización manual
+                CacheService.invalidateAll(); 
+                this.loadDashboardData();
+            });
         }
         
         if (this.elements.viewAllActivityButton) {
@@ -79,24 +94,39 @@ const DashboardController = {
             });
         }
         
-        // Configurar eventos para los enlaces de navegación
+        // Configurar eventos para los enlaces de navegación (una sola vez)
         this.setupNavigationEvents();
         
         // Cargar datos del dashboard
         await this.loadDashboardData();
+        
+        // Marcar como inicializado
+        this.isInitialized = true;
     },
     
     /**
      * Configura los eventos de navegación para los botones "Ver detalles"
      */
     setupNavigationEvents() {
+        // Evitar configurar los mismos eventos múltiples veces
+        if (this._eventsConfigured) {
+            console.log('Eventos de navegación ya configurados, omitiendo');
+            return;
+        }
+        
         console.log('Configurando eventos de navegación');
         
         // Configurar todos los elementos con data-view para la navegación
         document.querySelectorAll('[data-view]').forEach(element => {
-            element.removeEventListener('click', (e) => this.handleNavigation(e)); // Eliminar listeners previos
-            element.addEventListener('click', (e) => this.handleNavigation(e));
+            // Remover cualquier listener previo (para estar seguros)
+            element.removeEventListener('click', this._navigationHandler);
+            
+            // Usar una función nombrada para poder removerla después si es necesario
+            this._navigationHandler = (e) => this.handleNavigation(e);
+            element.addEventListener('click', this._navigationHandler);
         });
+        
+        this._eventsConfigured = true;
     },
     
     /**
@@ -192,7 +222,14 @@ const DashboardController = {
      * Carga los datos del dashboard (estadísticas y actividad reciente)
      */
     async loadDashboardData() {
+        // Evitar múltiples cargas simultáneas
+        if (this.isLoadingData) {
+            console.log('Ya hay una carga de datos en progreso, ignorando solicitud');
+            return;
+        }
+        
         try {
+            this.isLoadingData = true;
             Helpers.toggleSpinner(true);
             
             // Cargar información del usuario actual
@@ -204,13 +241,14 @@ const DashboardController = {
             // Cargar actividad reciente
             await this.loadRecentActivity();
             
-            // Configurar nuevamente los eventos de navegación después de actualizar el DOM
-            this.setupNavigationEvents();
+            // Registrar el momento de la última carga
+            this.lastDataLoad = Date.now();
             
         } catch (error) {
             console.error('Error al cargar datos del dashboard:', error);
             Helpers.showError('Error al cargar el dashboard: ' + error.message);
         } finally {
+            this.isLoadingData = false;
             Helpers.toggleSpinner(false);
         }
     },
@@ -272,37 +310,19 @@ const DashboardController = {
             let roleCount = 0;
             let moduleCount = 0;
             
-            // Obtener conteo de usuarios
-            try {
-                const users = await ApiService.get(API_CONFIG.ENDPOINTS.USER.BASE);
-                userCount = Array.isArray(users) ? users.length : 0;
-            } catch (error) {
-                console.error('Error al obtener usuarios:', error);
-            }
+            // Cargar datos con caché de forma paralela para mejor rendimiento
+            const [users, persons, roles, modules] = await Promise.all([
+                ApiService.getCached(API_CONFIG.ENDPOINTS.USER.BASE, {}, true, 30000), // 30 segundos
+                ApiService.getCached(API_CONFIG.ENDPOINTS.PERSON.BASE, {}, true, 30000),
+                ApiService.getCached(API_CONFIG.ENDPOINTS.ROL.BASE, {}, true, 30000),
+                ApiService.getCached(API_CONFIG.ENDPOINTS.MODULE.BASE, {}, true, 30000)
+            ]);
             
-            // Obtener conteo de personas
-            try {
-                const persons = await ApiService.get(API_CONFIG.ENDPOINTS.PERSON.BASE);
-                personCount = Array.isArray(persons) ? persons.length : 0;
-            } catch (error) {
-                console.error('Error al obtener personas:', error);
-            }
-            
-            // Obtener conteo de roles
-            try {
-                const roles = await ApiService.get(API_CONFIG.ENDPOINTS.ROL.BASE);
-                roleCount = Array.isArray(roles) ? roles.length : 0;
-            } catch (error) {
-                console.error('Error al obtener roles:', error);
-            }
-            
-            // Obtener conteo de módulos
-            try {
-                const modules = await ApiService.get(API_CONFIG.ENDPOINTS.MODULE.BASE);
-                moduleCount = Array.isArray(modules) ? modules.length : 0;
-            } catch (error) {
-                console.error('Error al obtener módulos:', error);
-            }
+            // Calcular contadores
+            userCount = Array.isArray(users) ? users.length : 0;
+            personCount = Array.isArray(persons) ? persons.length : 0;
+            roleCount = Array.isArray(roles) ? roles.length : 0;
+            moduleCount = Array.isArray(modules) ? modules.length : 0;
             
             // Actualizar interfaz - verificar que los elementos existan
             if (this.elements.totalUsers) {
