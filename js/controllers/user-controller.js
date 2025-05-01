@@ -522,10 +522,13 @@ const UserController = {
         try {
             Helpers.showLoading();
             
+            // Usar el método modificado que ahora utiliza PATCH
             await UserService.changePassword(id, { newPassword });
             
             Helpers.hideLoading();
             Helpers.showMessage('Contraseña actualizada', 'La contraseña se ha actualizado correctamente');
+            
+            // No es necesario recargar la lista de usuarios ya que solo se actualizó la contraseña
         } catch (error) {
             Helpers.hideLoading();
             Helpers.showError('Error al cambiar la contraseña', error.message);

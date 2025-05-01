@@ -144,7 +144,15 @@ const UserService = {
      */
     async changePassword(id, passwordData) {
         try {
-            return await ApiService.post(`${API_CONFIG.ENDPOINTS.USER.BY_ID(id)}/password`, passwordData);
+            // Crear objeto con solo la nueva contraseña para enviar al endpoint específico
+            const passwordUpdate = {
+                newPassword: passwordData.newPassword
+            };
+            
+            console.log(`Actualizando contraseña para usuario ID ${id} usando endpoint específico`);
+            
+            // Usar el endpoint específico para cambiar contraseñas
+            return await ApiService.patch(`${API_CONFIG.ENDPOINTS.USER.BY_ID(id)}/password`, passwordUpdate);
         } catch (error) {
             console.error(`Error al cambiar la contraseña del usuario con ID ${id}:`, error);
             throw error;
