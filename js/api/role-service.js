@@ -38,7 +38,14 @@ const RoleService = {
      */
     async create(roleData) {
         try {
-            return await ApiService.post(API_CONFIG.ENDPOINTS.ROL.BASE, roleData);
+            // Formatear datos de acuerdo a lo que espera la API
+            const formattedData = {
+                id: 0, // Para crear un nuevo rol, el ID debe ser 0 o no incluirse
+                typeRol: roleData.name,
+                description: roleData.description,
+                active: roleData.active
+            };
+            return await ApiService.post(API_CONFIG.ENDPOINTS.ROL.BASE, formattedData);
         } catch (error) {
             console.error('Error al crear el rol:', error);
             throw error;
@@ -53,7 +60,14 @@ const RoleService = {
      */
     async update(id, roleData) {
         try {
-            return await ApiService.put(API_CONFIG.ENDPOINTS.ROL.BY_ID(id), roleData);
+            // Formatear datos de acuerdo a lo que espera la API
+            const formattedData = {
+                id: id,
+                typeRol: roleData.name,
+                description: roleData.description,
+                active: roleData.active
+            };
+            return await ApiService.put(API_CONFIG.ENDPOINTS.ROL.BY_ID(id), formattedData);
         } catch (error) {
             console.error(`Error al actualizar el rol con ID ${id}:`, error);
             throw error;
@@ -68,7 +82,13 @@ const RoleService = {
      */
     async patch(id, partialData) {
         try {
-            return await ApiService.patch(API_CONFIG.ENDPOINTS.ROL.BY_ID(id), partialData);
+            // Formatear datos de acuerdo a lo que espera la API
+            const formattedData = { id: id };
+            if (partialData.name !== undefined) formattedData.typeRol = partialData.name;
+            if (partialData.description !== undefined) formattedData.description = partialData.description;
+            if (partialData.active !== undefined) formattedData.active = partialData.active;
+            
+            return await ApiService.patch(API_CONFIG.ENDPOINTS.ROL.BY_ID(id), formattedData);
         } catch (error) {
             console.error(`Error al actualizar parcialmente el rol con ID ${id}:`, error);
             throw error;
@@ -96,7 +116,7 @@ const RoleService = {
      */
     async activate(id) {
         try {
-            return await ApiService.post(API_CONFIG.ENDPOINTS.ROL.ACTIVATE(id));
+            return await ApiService.post(API_CONFIG.ENDPOINTS.ROL.ACTIVATE(id), {});
         } catch (error) {
             console.error(`Error al activar el rol con ID ${id}:`, error);
             throw error;
@@ -110,8 +130,7 @@ const RoleService = {
      */
     async deactivate(id) {
         try {
-            // Usamos POST en lugar de DELETE para desactivar un rol
-            return await ApiService.post(API_CONFIG.ENDPOINTS.ROL.DEACTIVATE(id));
+            return await ApiService.patch(API_CONFIG.ENDPOINTS.ROL.DEACTIVATE(id), {});
         } catch (error) {
             console.error(`Error al desactivar el rol con ID ${id}:`, error);
             throw error;
@@ -144,7 +163,7 @@ const RoleService = {
      */
     async getFormsByRoleId(roleId) {
         try {
-            return await ApiService.get(`${API_CONFIG.ENDPOINTS.ROL.BY_ID(roleId)}/forms`);
+            return await ApiService.get(API_CONFIG.ENDPOINTS.ROL.FORMS(roleId));
         } catch (error) {
             console.error(`Error al obtener formularios del rol con ID ${roleId}:`, error);
             throw error;
@@ -159,7 +178,7 @@ const RoleService = {
      */
     async assignForms(roleId, formIds) {
         try {
-            return await ApiService.post(`${API_CONFIG.ENDPOINTS.ROL.BY_ID(roleId)}/forms`, { formIds });
+            return await ApiService.post(API_CONFIG.ENDPOINTS.ROL.ASSIGN_FORMS(roleId), { formIds });
         } catch (error) {
             console.error(`Error al asignar formularios al rol con ID ${roleId}:`, error);
             throw error;

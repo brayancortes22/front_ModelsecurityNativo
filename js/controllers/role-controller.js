@@ -387,7 +387,12 @@ const RoleController = {
             
             // Cerrar modal
             const roleModal = bootstrap.Modal.getInstance(document.getElementById('roleModal'));
-            roleModal.hide();
+            if (roleModal) {
+                roleModal.hide();
+            } else {
+                // Si no se puede obtener la instancia, usar jQuery o cerrar manualmente
+                document.querySelector('#roleModal .btn-close').click();
+            }
             
             // Recargar lista de roles
             await this.loadRoles();
