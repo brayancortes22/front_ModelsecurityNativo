@@ -1,99 +1,137 @@
 /**
- * Servicio para operaciones relacionadas con módulos
- * Proporciona métodos para gestionar módulos en el sistema
+ * Servicio para gestionar operaciones relacionadas con módulos
+ * Utiliza el ApiService base para comunicarse con el backend
  */
 
 const ModuleService = {
     /**
      * Obtiene todos los módulos
-     * @param {Object} params - Parámetros de filtrado opcional
      * @returns {Promise<Array>} Lista de módulos
      */
-    async getAllModules(params = {}) {
-        return ApiService.get(API_CONFIG.ENDPOINTS.MODULE.BASE, params);
+    async getAll() {
+        try {
+            return await ApiService.get(API_CONFIG.ENDPOINTS.MODULE.BASE);
+        } catch (error) {
+            console.error('Error al obtener los módulos:', error);
+            throw error;
+        }
     },
-    
+
     /**
-     * Obtiene un módulo por su ID
+     * Obtiene un módulo específico por su ID
      * @param {number} id - ID del módulo
-     * @returns {Promise<Object>} Módulo encontrado
+     * @returns {Promise<Object>} Datos del módulo
      */
-    async getModuleById(id) {
-        return ApiService.get(API_CONFIG.ENDPOINTS.MODULE.BY_ID(id));
+    async getById(id) {
+        try {
+            return await ApiService.get(API_CONFIG.ENDPOINTS.MODULE.BY_ID(id));
+        } catch (error) {
+            console.error(`Error al obtener el módulo con ID ${id}:`, error);
+            throw error;
+        }
     },
-    
+
     /**
      * Crea un nuevo módulo
      * @param {Object} moduleData - Datos del módulo a crear
-     * @returns {Promise<Object>} Módulo creado
+     * @returns {Promise<Object>} Datos del módulo creado
      */
-    async createModule(moduleData) {
-        return ApiService.post(API_CONFIG.ENDPOINTS.MODULE.BASE, moduleData);
+    async create(moduleData) {
+        try {
+            return await ApiService.post(API_CONFIG.ENDPOINTS.MODULE.BASE, moduleData);
+        } catch (error) {
+            console.error('Error al crear el módulo:', error);
+            throw error;
+        }
     },
-    
+
     /**
      * Actualiza un módulo existente
      * @param {number} id - ID del módulo
-     * @param {Object} moduleData - Datos actualizados del módulo
-     * @returns {Promise<Object>} Módulo actualizado
+     * @param {Object} moduleData - Nuevos datos del módulo
+     * @returns {Promise<Object>} Datos actualizados del módulo
      */
-    async updateModule(id, moduleData) {
-        return ApiService.put(API_CONFIG.ENDPOINTS.MODULE.BY_ID(id), moduleData);
+    async update(id, moduleData) {
+        try {
+            return await ApiService.put(API_CONFIG.ENDPOINTS.MODULE.BY_ID(id), moduleData);
+        } catch (error) {
+            console.error(`Error al actualizar el módulo con ID ${id}:`, error);
+            throw error;
+        }
     },
-    
-    /**
-     * Actualiza parcialmente un módulo
-     * @param {number} id - ID del módulo
-     * @param {Object} partialData - Datos parciales a actualizar
-     * @returns {Promise<Object>} Módulo actualizado
-     */
-    async patchModule(id, partialData) {
-        return ApiService.patch(API_CONFIG.ENDPOINTS.MODULE.BY_ID(id), partialData);
-    },
-    
+
     /**
      * Elimina un módulo
-     * @param {number} id - ID del módulo
+     * @param {number} id - ID del módulo a eliminar
      * @returns {Promise<void>}
      */
-    async deleteModule(id) {
-        return ApiService.delete(API_CONFIG.ENDPOINTS.MODULE.BY_ID(id));
+    async delete(id) {
+        try {
+            return await ApiService.delete(API_CONFIG.ENDPOINTS.MODULE.BY_ID(id));
+        } catch (error) {
+            console.error(`Error al eliminar el módulo con ID ${id}:`, error);
+            throw error;
+        }
     },
-    
+
     /**
      * Activa un módulo
      * @param {number} id - ID del módulo
      * @returns {Promise<Object>} Resultado de la operación
      */
-    async activateModule(id) {
-        return ApiService.post(API_CONFIG.ENDPOINTS.MODULE.ACTIVATE(id));
+    async activate(id) {
+        try {
+            return await ApiService.post(API_CONFIG.ENDPOINTS.MODULE.ACTIVATE(id));
+        } catch (error) {
+            console.error(`Error al activar el módulo con ID ${id}:`, error);
+            throw error;
+        }
     },
-    
+
     /**
      * Desactiva un módulo
      * @param {number} id - ID del módulo
      * @returns {Promise<Object>} Resultado de la operación
      */
-    async deactivateModule(id) {
-        return ApiService.post(API_CONFIG.ENDPOINTS.MODULE.DEACTIVATE(id));
+    async deactivate(id) {
+        try {
+            return await ApiService.delete(API_CONFIG.ENDPOINTS.MODULE.DEACTIVATE(id));
+        } catch (error) {
+            console.error(`Error al desactivar el módulo con ID ${id}:`, error);
+            throw error;
+        }
     },
     
+    /**
+     * Cambia el estado de activación de un módulo
+     * @param {number} id - ID del módulo
+     * @param {boolean} active - Nuevo estado de activación
+     * @returns {Promise<Object>} Resultado de la operación
+     */
+    async changeStatus(id, active) {
+        try {
+            if (active) {
+                return await this.activate(id);
+            } else {
+                return await this.deactivate(id);
+            }
+        } catch (error) {
+            console.error(`Error al cambiar el estado del módulo con ID ${id}:`, error);
+            throw error;
+        }
+    },
+
     /**
      * Obtiene los formularios asociados a un módulo
-     * @param {number} id - ID del módulo
-     * @returns {Promise<Array>} Lista de formularios asociados al módulo
-     */
-    async getModuleForms(id) {
-        return ApiService.get(API_CONFIG.ENDPOINTS.MODULE.FORMS(id));
-    },
-    
-    /**
-     * Asigna un formulario a un módulo
      * @param {number} moduleId - ID del módulo
-     * @param {Object} formData - Datos de la relación módulo-formulario
-     * @returns {Promise<Object>} Relación creada
+     * @returns {Promise<Array>} Lista de formularios
      */
-    async assignFormToModule(moduleId, formData) {
-        return ApiService.post(API_CONFIG.ENDPOINTS.MODULE.FORMS(moduleId), formData);
+    async getFormsByModuleId(moduleId) {
+        try {
+            return await ApiService.get(`${API_CONFIG.ENDPOINTS.MODULE.BY_ID(moduleId)}/forms`);
+        } catch (error) {
+            console.error(`Error al obtener formularios del módulo con ID ${moduleId}:`, error);
+            throw error;
+        }
     }
 };

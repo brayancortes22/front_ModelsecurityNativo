@@ -43,7 +43,9 @@ const API_CONFIG = {
             BASE: '/Rol',
             BY_ID: (id) => `/Rol/${id}`,
             ACTIVATE: (id) => `/Rol/${id}/activate`,
-            DEACTIVATE: (id) => `/Rol/soft-delete/${id}`,
+            DEACTIVATE: (id) => `/Rol/soft-delete/${id}`, // Corregido para coincidir con el endpoint del backend
+            FORMS: (id) => `/Rol/${id}/forms`, // Endpoint para obtener formularios asociados a un rol
+            ASSIGN_FORMS: (id) => `/Rol/${id}/forms`, // Endpoint para asignar formularios a un rol
         },
         
         // Módulos

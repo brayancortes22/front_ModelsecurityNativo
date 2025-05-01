@@ -118,19 +118,19 @@
                             <input type="hidden" id="roleId" name="id">
 
                             <div class="mb-3">
-                                <label for="typeRol" class="form-label required-field">Tipo de Rol</label>
+                                <label for="roleName" class="form-label required-field">Nombre del Rol</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-person-lock"></i></span>
-                                    <input type="text" id="typeRol" name="typeRol" class="form-control" required>
+                                    <input type="text" id="roleName" name="name" class="form-control" required>
                                 </div>
                                 <div class="form-text">Nombre del rol en el sistema</div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="description" class="form-label">Descripción</label>
+                                <label for="roleDescription" class="form-label">Descripción</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-card-text"></i></span>
-                                    <textarea id="description" name="description" class="form-control"
+                                    <textarea id="roleDescription" name="description" class="form-control"
                                         rows="3"></textarea>
                                 </div>
                                 <div class="form-text">Descripción detallada de las responsabilidades del rol</div>
@@ -138,8 +138,8 @@
 
                             <div class="mb-3">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="active" name="active">
-                                    <label class="form-check-label" for="active">Rol activo</label>
+                                    <input class="form-check-input" type="checkbox" id="roleActive" name="active">
+                                    <label class="form-check-label" for="roleActive">Rol activo</label>
                                 </div>
                             </div>
                         </div>
@@ -161,16 +161,17 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Permisos del Rol: <span id="permissionRoleName"></span></h5>
+                        <h5 class="modal-title">Permisos del Rol: <span id="rolePermissionsName"></span></h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <input type="hidden" id="rolePermissionsId">
                         <div class="alert alert-info">
                             <i class="bi bi-info-circle me-2"></i> Seleccione los formularios a los que este rol tendrá
                             acceso
                         </div>
 
-                        <div id="modulesAccordion" class="accordion">
+                        <div id="roleFormsList">
                             <!-- Los módulos y formularios se cargarán dinámicamente aquí -->
                             <div class="text-center p-3">
                                 <div class="spinner-border text-primary" role="status">
@@ -182,7 +183,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button type="button" class="btn btn-primary" id="btnSavePermissions">
+                        <button type="button" class="btn btn-primary" id="btnSaveRolePermissions">
                             <i class="bi bi-check2-all me-1"></i> Guardar Permisos
                         </button>
                     </div>

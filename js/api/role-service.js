@@ -1,105 +1,183 @@
 /**
- * Servicio para operaciones relacionadas con roles
- * Proporciona métodos para gestionar roles en el sistema
+ * Servicio para gestionar operaciones relacionadas con roles
+ * Utiliza el ApiService base para comunicarse con el backend
  */
 
 const RoleService = {
     /**
      * Obtiene todos los roles
-     * @param {Object} params - Parámetros de filtrado opcional
      * @returns {Promise<Array>} Lista de roles
      */
-    async getAllRoles(params = {}) {
-        return ApiService.get(API_CONFIG.ENDPOINTS.ROL.BASE, params);
+    async getAll() {
+        try {
+            return await ApiService.get(API_CONFIG.ENDPOINTS.ROL.BASE);
+        } catch (error) {
+            console.error('Error al obtener los roles:', error);
+            throw error;
+        }
     },
-    
+
     /**
-     * Obtiene un rol por su ID
+     * Obtiene un rol específico por su ID
      * @param {number} id - ID del rol
-     * @returns {Promise<Object>} Rol encontrado
+     * @returns {Promise<Object>} Datos del rol
      */
-    async getRoleById(id) {
-        return ApiService.get(API_CONFIG.ENDPOINTS.ROL.BY_ID(id));
+    async getById(id) {
+        try {
+            return await ApiService.get(API_CONFIG.ENDPOINTS.ROL.BY_ID(id));
+        } catch (error) {
+            console.error(`Error al obtener el rol con ID ${id}:`, error);
+            throw error;
+        }
     },
-    
+
     /**
      * Crea un nuevo rol
      * @param {Object} roleData - Datos del rol a crear
-     * @returns {Promise<Object>} Rol creado
+     * @returns {Promise<Object>} Datos del rol creado
      */
-    async createRole(roleData) {
-        return ApiService.post(API_CONFIG.ENDPOINTS.ROL.BASE, roleData);
+    async create(roleData) {
+        try {
+            return await ApiService.post(API_CONFIG.ENDPOINTS.ROL.BASE, roleData);
+        } catch (error) {
+            console.error('Error al crear el rol:', error);
+            throw error;
+        }
     },
-    
+
     /**
      * Actualiza un rol existente
      * @param {number} id - ID del rol
-     * @param {Object} roleData - Datos actualizados del rol
-     * @returns {Promise<Object>} Rol actualizado
+     * @param {Object} roleData - Nuevos datos del rol
+     * @returns {Promise<Object>} Datos actualizados del rol
      */
-    async updateRole(id, roleData) {
-        return ApiService.put(API_CONFIG.ENDPOINTS.ROL.BY_ID(id), roleData);
+    async update(id, roleData) {
+        try {
+            return await ApiService.put(API_CONFIG.ENDPOINTS.ROL.BY_ID(id), roleData);
+        } catch (error) {
+            console.error(`Error al actualizar el rol con ID ${id}:`, error);
+            throw error;
+        }
     },
-    
+
     /**
      * Actualiza parcialmente un rol
      * @param {number} id - ID del rol
      * @param {Object} partialData - Datos parciales a actualizar
-     * @returns {Promise<Object>} Rol actualizado
+     * @returns {Promise<Object>} Datos actualizados del rol
      */
-    async patchRole(id, partialData) {
-        return ApiService.patch(API_CONFIG.ENDPOINTS.ROL.BY_ID(id), partialData);
+    async patch(id, partialData) {
+        try {
+            return await ApiService.patch(API_CONFIG.ENDPOINTS.ROL.BY_ID(id), partialData);
+        } catch (error) {
+            console.error(`Error al actualizar parcialmente el rol con ID ${id}:`, error);
+            throw error;
+        }
     },
-    
+
     /**
      * Elimina un rol
-     * @param {number} id - ID del rol
+     * @param {number} id - ID del rol a eliminar
      * @returns {Promise<void>}
      */
-    async deleteRole(id) {
-        return ApiService.delete(API_CONFIG.ENDPOINTS.ROL.BY_ID(id));
+    async delete(id) {
+        try {
+            return await ApiService.delete(API_CONFIG.ENDPOINTS.ROL.BY_ID(id));
+        } catch (error) {
+            console.error(`Error al eliminar el rol con ID ${id}:`, error);
+            throw error;
+        }
     },
-    
+
     /**
      * Activa un rol
      * @param {number} id - ID del rol
      * @returns {Promise<Object>} Resultado de la operación
      */
-    async activateRole(id) {
-        // Nota: En el Swagger no se encontró un endpoint específico para activar roles
-        // Se podría utilizar PATCH para actualizar el estado
-        return ApiService.patch(API_CONFIG.ENDPOINTS.ROL.BY_ID(id), { active: true });
+    async activate(id) {
+        try {
+            return await ApiService.post(API_CONFIG.ENDPOINTS.ROL.ACTIVATE(id));
+        } catch (error) {
+            console.error(`Error al activar el rol con ID ${id}:`, error);
+            throw error;
+        }
     },
-    
+
     /**
      * Desactiva un rol
      * @param {number} id - ID del rol
      * @returns {Promise<Object>} Resultado de la operación
      */
-    async deactivateRole(id) {
-        // Según Swagger, la desactivación de roles se hace con PATCH a /api/Rol/soft-delete/{id}
-        return ApiService.patch(API_CONFIG.ENDPOINTS.ROL.DEACTIVATE(id));
+    async deactivate(id) {
+        try {
+            // Usamos POST en lugar de DELETE para desactivar un rol
+            return await ApiService.post(API_CONFIG.ENDPOINTS.ROL.DEACTIVATE(id));
+        } catch (error) {
+            console.error(`Error al desactivar el rol con ID ${id}:`, error);
+            throw error;
+        }
     },
     
+    /**
+     * Cambia el estado de activación de un rol
+     * @param {number} id - ID del rol
+     * @param {boolean} active - Nuevo estado de activación
+     * @returns {Promise<Object>} Resultado de la operación
+     */
+    async changeStatus(id, active) {
+        try {
+            if (active) {
+                return await this.activate(id);
+            } else {
+                return await this.deactivate(id);
+            }
+        } catch (error) {
+            console.error(`Error al cambiar el estado del rol con ID ${id}:`, error);
+            throw error;
+        }
+    },
+
     /**
      * Obtiene los formularios asociados a un rol
-     * @param {number} id - ID del rol
-     * @returns {Promise<Array>} Lista de formularios asociados al rol
+     * @param {number} roleId - ID del rol
+     * @returns {Promise<Array>} Lista de formularios
      */
-    async getRoleForms(id) {
-        // Según Swagger, se debe obtener de /api/RolForm filtrando por rolId
-        return ApiService.get(API_CONFIG.ENDPOINTS.ROL.FORMS(), { rolId: id });
+    async getFormsByRoleId(roleId) {
+        try {
+            return await ApiService.get(`${API_CONFIG.ENDPOINTS.ROL.BY_ID(roleId)}/forms`);
+        } catch (error) {
+            console.error(`Error al obtener formularios del rol con ID ${roleId}:`, error);
+            throw error;
+        }
     },
     
     /**
-     * Asigna un formulario a un rol
+     * Asigna formularios a un rol
      * @param {number} roleId - ID del rol
-     * @param {Object} formData - Datos de la relación rol-formulario
-     * @returns {Promise<Object>} Relación creada
+     * @param {Array<number>} formIds - IDs de los formularios a asignar
+     * @returns {Promise<Object>} Resultado de la operación
      */
-    async assignFormToRole(roleId, formData) {
-        // Aseguramos que el formData incluya el rolId
-        const data = { ...formData, rolId: roleId };
-        return ApiService.post(API_CONFIG.ENDPOINTS.ROL.FORMS(), data);
+    async assignForms(roleId, formIds) {
+        try {
+            return await ApiService.post(`${API_CONFIG.ENDPOINTS.ROL.BY_ID(roleId)}/forms`, { formIds });
+        } catch (error) {
+            console.error(`Error al asignar formularios al rol con ID ${roleId}:`, error);
+            throw error;
+        }
+    },
+    
+    /**
+     * Elimina la asignación de un formulario a un rol
+     * @param {number} roleId - ID del rol
+     * @param {number} formId - ID del formulario
+     * @returns {Promise<Object>} Resultado de la operación
+     */
+    async removeForm(roleId, formId) {
+        try {
+            return await ApiService.delete(`${API_CONFIG.ENDPOINTS.ROL.BY_ID(roleId)}/forms/${formId}`);
+        } catch (error) {
+            console.error(`Error al quitar formulario ${formId} del rol con ID ${roleId}:`, error);
+            throw error;
+        }
     }
 };
