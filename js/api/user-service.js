@@ -96,7 +96,7 @@ const UserService = {
      */
     async activate(id) {
         try {
-            return await ApiService.patch(API_CONFIG.ENDPOINTS.USER.ACTIVATE(id));
+            return await ApiService.post(API_CONFIG.ENDPOINTS.USER.ACTIVATE(id));
         } catch (error) {
             console.error(`Error al activar el usuario con ID ${id}:`, error);
             throw error;
@@ -110,7 +110,7 @@ const UserService = {
      */
     async deactivate(id) {
         try {
-            return await ApiService.patch(API_CONFIG.ENDPOINTS.USER.DEACTIVATE(id));
+            return await ApiService.delete(API_CONFIG.ENDPOINTS.USER.DEACTIVATE(id));
         } catch (error) {
             console.error(`Error al desactivar el usuario con ID ${id}:`, error);
             throw error;
@@ -125,9 +125,11 @@ const UserService = {
      */
     async changeStatus(id, status) {
         try {
-            return await ApiService.patch(
-                `${API_CONFIG.ENDPOINTS.USER.CHANGE_STATUS(id)}?estado=${status}`
-            );
+            if (status) {
+                return await ApiService.post(API_CONFIG.ENDPOINTS.USER.ACTIVATE(id));
+            } else {
+                return await ApiService.delete(API_CONFIG.ENDPOINTS.USER.DEACTIVATE(id));
+            }
         } catch (error) {
             console.error(`Error al cambiar el estado del usuario con ID ${id}:`, error);
             throw error;
@@ -189,7 +191,7 @@ const UserService = {
      */
     async deactivateUser(id) {
         try {
-            return await ApiService.patch(API_CONFIG.ENDPOINTS.USER.DEACTIVATE(id));
+            return await ApiService.delete(API_CONFIG.ENDPOINTS.USER.DEACTIVATE(id));
         } catch (error) {
             console.error(`Error al desactivar el usuario con ID ${id}:`, error);
             throw error;
@@ -206,6 +208,20 @@ const UserService = {
             return await ApiService.get(API_CONFIG.ENDPOINTS.USER.BY_ID(id));
         } catch (error) {
             console.error(`Error al obtener el usuario con ID ${id}:`, error);
+            throw error;
+        }
+    },
+
+    /**
+     * Activa un usuario
+     * @param {number} id - ID del usuario
+     * @returns {Promise<Object>} Resultado de la operación
+     */
+    async activateUser(id) {
+        try {
+            return await ApiService.post(API_CONFIG.ENDPOINTS.USER.ACTIVATE(id));
+        } catch (error) {
+            console.error(`Error al activar el usuario con ID ${id}:`, error);
             throw error;
         }
     },

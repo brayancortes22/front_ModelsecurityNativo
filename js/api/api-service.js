@@ -13,7 +13,7 @@ const ApiService = {
     async request(url, options = {}) {
         try {
             // Agregar URL base si la URL no es absoluta
-            const fullUrl = url.startsWith('http') 
+            const fullUrl = url.startsWith('https') 
                 ? url 
                 : `${API_CONFIG.BASE_URL}${url}`;
             
