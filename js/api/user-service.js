@@ -139,16 +139,12 @@ const UserService = {
     /**
      * Cambia la contraseña de un usuario
      * @param {number} id - ID del usuario
-     * @param {string} oldPassword - Contraseña actual
-     * @param {string} newPassword - Nueva contraseña
+     * @param {Object} passwordData - Objeto con la nueva contraseña
      * @returns {Promise<Object>} Resultado de la operación
      */
-    async changePassword(id, oldPassword, newPassword) {
+    async changePassword(id, passwordData) {
         try {
-            return await ApiService.post(`${API_CONFIG.ENDPOINTS.USER.BY_ID(id)}/password`, {
-                oldPassword,
-                newPassword
-            });
+            return await ApiService.post(`${API_CONFIG.ENDPOINTS.USER.BY_ID(id)}/password`, passwordData);
         } catch (error) {
             console.error(`Error al cambiar la contraseña del usuario con ID ${id}:`, error);
             throw error;
@@ -222,6 +218,91 @@ const UserService = {
             return await ApiService.post(API_CONFIG.ENDPOINTS.USER.ACTIVATE(id));
         } catch (error) {
             console.error(`Error al activar el usuario con ID ${id}:`, error);
+            throw error;
+        }
+    },
+
+    /**
+     * Actualiza un usuario (método de conveniencia)
+     * @param {number} id - ID del usuario
+     * @param {Object} userData - Datos del usuario a actualizar
+     * @returns {Promise<Object>} Datos actualizados del usuario
+     */
+    async updateUser(id, userData) {
+        try {
+            // Si no se proporciona una nueva contraseña, simplemente enviamos los datos
+            // al endpoint regular sin incluir una contraseña
+            if (!userData.password || userData.password.trim() === '') {
+                console.log('Actualizando sin contraseña');
+                
+                // Crear una copia para evitar modificar el objeto original
+                const dataToSend = { ...userData };
+                
+                // Asegurarse de que no enviamos una contraseña vacía o nula
+                delete dataToSend.password;
+                
+                // IMPORTANTE: Asegurarse de que el ID en el objeto coincide con el ID de la URL
+                // Esto es crucial para pasar la validación en el backend
+                dataToSend.id = id;
+                
+                console.log('Enviando datos para actualizar usuario (sin contraseña):', dataToSend);
+                return await ApiService.patch(API_CONFIG.ENDPOINTS.USER.BY_ID(id), dataToSend);
+            } else {
+                // Si se proporciona una nueva contraseña, la enviamos para que sea encriptada
+                console.log('Actualizando con nueva contraseña para encriptar en el servidor');
+                
+                // Asegurarse de que el ID en el objeto coincide con el ID de la URL
+                const dataToSend = { ...userData, id: id };
+                
+                console.log('Enviando datos para actualizar usuario (con nueva contraseña):', dataToSend);
+                return await ApiService.put(API_CONFIG.ENDPOINTS.USER.BY_ID(id), dataToSend);
+            }
+        } catch (error) {
+            console.error(`Error al actualizar el usuario con ID ${id}:`, error);
+            throw error;
+        }
+    },
+
+    /**
+     * Obtiene un usuario con su contraseña por ID
+     * Este método es interno y solo debe usarse para operaciones específicas
+     * @param {number} id - ID del usuario
+     * @returns {Promise<Object>} Datos completos del usuario, incluyendo contraseña encriptada
+     */
+    async getUserWithPasswordById(id) {
+        try {
+            // Usar el endpoint configurado en API_CONFIG
+            return await ApiService.get(API_CONFIG.ENDPOINTS.USER.WITH_PASSWORD(id));
+        } catch (error) {
+            console.error(`Error al obtener datos completos del usuario con ID ${id}:`, error);
+            throw error;
+        }
+    },
+
+    /**
+     * Crea un nuevo usuario (método de conveniencia)
+     * @param {Object} userData - Datos del usuario a crear
+     * @returns {Promise<Object>} Datos del usuario creado
+     */
+    async createUser(userData) {
+        try {
+            return await this.create(userData);
+        } catch (error) {
+            console.error('Error al crear el usuario:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Elimina un usuario (método de conveniencia)
+     * @param {number} id - ID del usuario a eliminar
+     * @returns {Promise<void>}
+     */
+    async deleteUser(id) {
+        try {
+            return await this.delete(id);
+        } catch (error) {
+            console.error(`Error al eliminar el usuario con ID ${id}:`, error);
             throw error;
         }
     },

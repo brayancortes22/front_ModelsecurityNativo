@@ -24,8 +24,10 @@ const API_CONFIG = {
         USER: {
             BASE: '/User',
             BY_ID: (id) => `/User/${id}`,
+            ACTUALIZAR: (id) => `/User/${id}`,
             ACTIVATE: (id) => `/User/${id}/activate`,
             DEACTIVATE: (id) => `/User/${id}/soft`,
+            WITH_PASSWORD: (id) => `/User/${id}/withpassword`, // Nuevo endpoint para obtener usuario con contraseña
         },
         
         // Personas

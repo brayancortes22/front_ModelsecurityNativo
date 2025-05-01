@@ -241,6 +241,7 @@ const UserController = {
         // Restablecer formulario
         this.elements.userForm.reset();
         this.elements.userFormMsg.textContent = '';
+        this.elements.userFormMsg.classList.add('d-none');
         
         // Establecer título según modo
         this.elements.userFormTitle.textContent = this.state.editMode ? 'Editar Usuario' : 'Nuevo Usuario';
@@ -273,10 +274,9 @@ const UserController = {
             this.elements.userForm.elements['active'].checked = true;
         }
         
-        // Mostrar formulario
-        this.elements.userForm.classList.remove('d-none');
-        this.elements.usersList.closest('.card').classList.add('d-none');
-        this.elements.btnNewUser.classList.add('d-none');
+        // Mostrar el modal en lugar de manipular la visibilidad de los elementos
+        const userModal = new bootstrap.Modal(document.getElementById('userModal'));
+        userModal.show();
     },
     
     /**
@@ -285,9 +285,11 @@ const UserController = {
     cancelUserEdit() {
         if (!this.elements.userForm) return;
         
-        this.elements.userForm.classList.add('d-none');
-        this.elements.usersList.closest('.card').classList.remove('d-none');
-        this.elements.btnNewUser.classList.remove('d-none');
+        // Cerrar el modal de Bootstrap
+        const userModal = bootstrap.Modal.getInstance(document.getElementById('userModal'));
+        if (userModal) {
+            userModal.hide();
+        }
         
         this.state.editMode = false;
         this.state.currentUser = null;
@@ -331,19 +333,28 @@ const UserController = {
                 active: this.elements.userForm.elements['active'].checked
             };
             
-            // Si es un nuevo usuario, agregar contraseña
-            if (!this.state.editMode) {
-                userData.password = this.elements.userForm.elements['password'].value;
-            }
+            // Siempre incluir el campo de contraseña, incluso en modo edición
+            // Si está en modo edición y no se proporciona contraseña, se enviará como null
+            // El backend decidirá si usar la contraseña existente o rechazar la solicitud
+            userData.password = this.elements.userForm.elements['password']?.value || null;
             
             Helpers.showLoading();
             
             // En modo edición, incluir el ID
             if (this.state.editMode && this.state.currentUser) {
                 userData.id = this.state.currentUser.id;
+                console.log("Datos a enviar para actualización:", userData);
                 await UserService.updateUser(this.state.currentUser.id, userData);
                 Helpers.showMessage('Usuario actualizado', 'El usuario se ha actualizado correctamente');
             } else {
+                // En modo creación, la contraseña es obligatoria
+                if (!userData.password) {
+                    this.elements.userFormMsg.textContent = 'La contraseña es obligatoria para crear un nuevo usuario';
+                    this.elements.userFormMsg.classList.remove('d-none');
+                    Helpers.hideLoading();
+                    return;
+                }
+                
                 await UserService.createUser(userData);
                 Helpers.showMessage('Usuario creado', 'El usuario se ha creado correctamente');
             }
@@ -351,7 +362,15 @@ const UserController = {
             // Recargar usuarios y mostrar lista
             await this.loadUsers();
             this.renderUsersList();
-            this.cancelUserEdit();
+            
+            // Cerrar el modal
+            const userModal = bootstrap.Modal.getInstance(document.getElementById('userModal'));
+            if (userModal) {
+                userModal.hide();
+            }
+            
+            this.state.editMode = false;
+            this.state.currentUser = null;
             
             Helpers.hideLoading();
         } catch (error) {
