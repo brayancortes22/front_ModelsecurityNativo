@@ -109,7 +109,7 @@ const PersonService = {
      */
     async deactivate(id) {
         try {
-            return await ApiService.post(API_CONFIG.ENDPOINTS.PERSON.DEACTIVATE(id));
+            return await ApiService.delete(API_CONFIG.ENDPOINTS.PERSON.DEACTIVATE(id));
         } catch (error) {
             console.error(`Error al desactivar persona con ID ${id}:`, error);
             throw error;
