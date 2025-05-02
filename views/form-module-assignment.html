@@ -23,7 +23,7 @@
 
         <div class="row mt-4">
             <!-- Lista de Módulos -->
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">Módulos</h5>
@@ -45,8 +45,29 @@
                 </div>
             </div>
 
-            <!-- Lista de Formularios -->
-            <div class="col-md-6">
+            <!-- Formularios Asignados al Módulo -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Formularios Asignados</h5>
+                        <div id="selectedModuleInfo" class="text-muted small mt-1">
+                            Seleccione un módulo para ver sus formularios
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group" id="assignedFormsList">
+                            <!-- Los formularios asignados se cargarán dinámicamente aquí -->
+                            <div class="text-center p-3">
+                                <i class="bi bi-info-circle text-muted"></i>
+                                <p class="text-muted">No hay módulo seleccionado</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Formularios Disponibles -->
+            <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">Formularios Disponibles</h5>
@@ -69,11 +90,14 @@
             </div>
         </div>
 
-        <!-- Botón para guardar asignación -->
+        <!-- Botones para asignar y quitar formularios -->
         <div class="row mt-3">
             <div class="col-12 text-center">
                 <button id="btnSaveAssignment" class="btn btn-primary" disabled>
-                    <i class="bi bi-save me-2"></i> Guardar Asignación
+                    <i class="bi bi-plus-circle me-2"></i> Asignar Formulario
+                </button>
+                <button id="btnRemoveForm" class="btn btn-danger ms-2" disabled>
+                    <i class="bi bi-trash me-2"></i> Quitar Formulario
                 </button>
             </div>
         </div>
@@ -90,6 +114,7 @@
     <script src="../js/api/auth-service.js"></script>
     <script src="../js/api/module-service.js"></script>
     <script src="../js/api/form-service.js"></script>
+    <script src="../js/api/form-module-service.js"></script>
     <script src="../js/controllers/form-module-assignment-controller.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {

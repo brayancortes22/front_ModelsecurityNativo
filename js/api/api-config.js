@@ -55,6 +55,7 @@ const API_CONFIG = {
             BY_ID: (id) => `/Module/${id}`,
             ACTIVATE: (id) => `/Module/${id}/activate`,
             DEACTIVATE: (id) => `/Module/${id}/soft`,
+            MODULE_FORMS: (id) => `/Module/${id}/forms`, // Endpoint para obtener formularios de un módulo
         },
         
         // Formularios

@@ -70,5 +70,19 @@ const FormModuleService = {
             console.error(`Error al eliminar asignación de formulario a módulo con ID ${id}:`, error);
             throw error;
         }
+    },
+
+    /**
+     * Obtiene todos los formularios asignados a un módulo específico
+     * @param {number} moduleId - ID del módulo
+     * @returns {Promise<Array>} Lista de asignaciones de formularios al módulo
+     */
+    async getByModuleId(moduleId) {
+        try {
+            return await ModuleService.getFormsByModuleId(moduleId);
+        } catch (error) {
+            console.error(`Error al obtener formularios asignados al módulo con ID ${moduleId}:`, error);
+            throw error;
+        }
     }
 };

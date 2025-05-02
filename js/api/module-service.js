@@ -128,7 +128,7 @@ const ModuleService = {
      */
     async getFormsByModuleId(moduleId) {
         try {
-            return await ApiService.get(`${API_CONFIG.ENDPOINTS.MODULE.BY_ID(moduleId)}/forms`);
+            return await ApiService.get(API_CONFIG.ENDPOINTS.MODULE.MODULE_FORMS(moduleId));
         } catch (error) {
             console.error(`Error al obtener formularios del módulo con ID ${moduleId}:`, error);
             throw error;
