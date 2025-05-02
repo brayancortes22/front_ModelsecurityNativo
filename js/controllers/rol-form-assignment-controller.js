@@ -102,11 +102,41 @@ const RolFormAssignmentController = {
      */
     async loadRoleForms(roleId) {
         try {
-            this.state.roleForms = await RolFormService.getFormsByRoleId(roleId);
+            // Mostrar indicador de carga
+            Helpers.showLoading('Cargando formularios asignados al rol...');
+            
+            // Obtener los formularios asignados al rol
+            const roleForms = await RolFormService.getFormsByRoleId(roleId);
+            
+            // Procesar los datos para incluir información detallada
+            this.state.roleForms = Array.isArray(roleForms) ? roleForms.map(form => {
+                return {
+                    id: form.id || 0,
+                    formId: form.id,
+                    permission: form.permission || 'READ',
+                    name: form.name,
+                    route: form.route,
+                    active: form.active,
+                    description: form.description
+                };
+            }) : [];
+            
+            console.log('Formularios asignados cargados:', this.state.roleForms);
+            
+            // Renderizar la lista de formularios asignados
             this.renderAssignedFormsList();
+            
+            // Actualizar estado de los botones
+            this.updateButtons();
+            
+            // Ocultar indicador de carga
+            Helpers.hideLoading();
         } catch (error) {
             console.error(`Error al cargar formularios del rol con ID ${roleId}:`, error);
-            Helpers.showError('Error', 'No se pudieron cargar los formularios del rol: ' + error.message);
+            Helpers.hideLoading();
+            Helpers.showError('Error', 'No se pudieron cargar los formularios asignados al rol: ' + error.message);
+            
+            // En caso de error, inicializar la lista como vacía
             this.state.roleForms = [];
             this.renderAssignedFormsList();
         }
@@ -239,27 +269,40 @@ const RolFormAssignmentController = {
 
         // Mostrar los formularios asignados
         this.state.roleForms.forEach(roleForm => {
-            const form = this.findFormById(roleForm.formId);
-            if (!form) return; // Si no se encuentra el formulario, saltamos
-
             const item = document.createElement('a');
             item.href = '#';
-            item.className = 'list-group-item list-group-item-action';
+            item.className = 'list-group-item list-group-item-action d-flex flex-column';
+            
             if (this.state.selectedAssignedForm?.id === roleForm.id) {
                 item.classList.add('active');
             }
 
+            // Contenido del ítem con más información
             item.innerHTML = `
-                <div class="d-flex w-100 justify-content-between">
-                    <h6 class="mb-1">${Helpers.escapeHtml(form.name)}</h6>
-                    <small><span class="badge bg-info">ID: ${roleForm.id}</span></small>
+                <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                    <h6 class="mb-0">${Helpers.escapeHtml(roleForm.name || '')}</h6>
+                    <div>
+                        <span class="badge bg-primary me-1">${roleForm.permission || 'READ'}</span>
+                        ${roleForm.active !== undefined ? 
+                            (roleForm.active ? 
+                                '<span class="badge bg-success">Activo</span>' : 
+                                '<span class="badge bg-danger">Inactivo</span>') 
+                            : ''}
+                    </div>
                 </div>
-                <small>Ruta: ${Helpers.escapeHtml(form.route || 'N/A')}</small>
+                <div class="small text-muted">
+                    ${roleForm.route ? `Ruta: ${Helpers.escapeHtml(roleForm.route)}` : 'Sin ruta definida'}
+                </div>
+                ${roleForm.description ? 
+                    `<div class="small text-truncate mt-1" title="${Helpers.escapeHtml(roleForm.description)}">
+                        ${Helpers.escapeHtml(roleForm.description.substring(0, 50))}${roleForm.description.length > 50 ? '...' : ''}
+                    </div>` 
+                    : ''}
             `;
 
             item.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.selectAssignedForm(roleForm, form);
+                this.selectAssignedForm(roleForm);
             });
 
             this.elements.assignedFormsList.appendChild(item);
@@ -306,12 +349,21 @@ const RolFormAssignmentController = {
     /**
      * Selecciona un formulario asignado
      */
-    selectAssignedForm(roleForm, form) {
-        this.state.selectedAssignedForm = {
-            ...roleForm,
-            formInfo: form // Guardamos la información del formulario para acceso rápido
-        };
-        this.renderLists();
+    selectAssignedForm(roleForm) {
+        this.state.selectedAssignedForm = roleForm;
+        
+        // Actualizar UI para mostrar el formulario seleccionado
+        const assignedFormItems = this.elements.assignedFormsList?.querySelectorAll('a');
+        if (assignedFormItems) {
+            assignedFormItems.forEach(item => item.classList.remove('active'));
+            const selectedItem = Array.from(assignedFormItems).find(
+                item => item.querySelector('h6')?.textContent === roleForm.name
+            );
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+            }
+        }
+        
         this.updateButtons();
     },
 
@@ -460,16 +512,51 @@ const RolFormAssignmentController = {
         try {
             Helpers.showLoading();
 
+            // Obtener información del formulario seleccionado
+            const formName = this.state.selectedAssignedForm.name || 'seleccionado';
+            
             // Confirmar la eliminación
-            if (!confirm(`¿Está seguro que desea quitar el formulario "${this.state.selectedAssignedForm.formInfo.name}" del rol "${this.state.selectedRole.typeRol}"?`)) {
+            if (!confirm(`¿Está seguro que desea quitar el formulario "${formName}" del rol "${this.state.selectedRole.typeRol}"?`)) {
                 Helpers.hideLoading();
                 return;
             }
 
-            // Eliminar el formulario asignado
-            await RolFormService.delete(this.state.selectedAssignedForm.id);
+            // Obtener el ID correcto para eliminar la asignación
+            // En algunos casos, la información que devuelve la API podría no incluir el ID del RolForm
+            // En este caso, necesitamos obtener ese ID
+            let rolFormId = this.state.selectedAssignedForm.id;
+            
+            // Si no tenemos ID (porque la estructura que viene de la API de Forms no lo incluye),
+            // debemos buscar primero todas las asignaciones para encontrar el ID correcto
+            if (!rolFormId || rolFormId === this.state.selectedAssignedForm.formId) {
+                try {
+                    // Obtener todas las asignaciones de rol-formulario
+                    const allRolForms = await RolFormService.getAll();
+                    
+                    // Buscar la asignación específica que queremos eliminar
+                    const matchingRolForm = allRolForms.find(rf => 
+                        rf.rolId === this.state.selectedRole.id && 
+                        rf.formId === this.state.selectedAssignedForm.formId
+                    );
+                    
+                    if (matchingRolForm && matchingRolForm.id) {
+                        rolFormId = matchingRolForm.id;
+                        console.log(`ID de asignación encontrado: ${rolFormId}`);
+                    }
+                } catch (error) {
+                    console.error('Error al buscar el ID de la asignación:', error);
+                }
+            }
+            
+            if (!rolFormId) {
+                throw new Error('No se pudo determinar el ID de la asignación a eliminar');
+            }
 
-            Helpers.showMessage('Éxito', `Formulario "${this.state.selectedAssignedForm.formInfo.name}" eliminado correctamente del rol`);
+            // Eliminar el formulario asignado
+            console.log(`Eliminando asignación con ID: ${rolFormId}`);
+            await RolFormService.delete(rolFormId);
+
+            Helpers.showMessage('Éxito', `Formulario "${formName}" eliminado correctamente del rol`);
             
             // Limpiar la selección del formulario asignado
             this.state.selectedAssignedForm = null;
