@@ -66,7 +66,16 @@ const ApiService = {
                 let errorMessage;
                 try {
                     const errorData = await response.json();
+                    console.log("Error completo del servidor:", errorData);
                     errorMessage = errorData.message || errorData.error || `Error ${response.status}: ${response.statusText}`;
+                    
+                    // Si hay detalles adicionales del error, añadirlos
+                    if (errorData.errors) {
+                        errorMessage += ` Detalles: ${JSON.stringify(errorData.errors)}`;
+                    }
+                    if (errorData.detail) {
+                        errorMessage += ` Detalle: ${errorData.detail}`;
+                    }
                 } catch (e) {
                     errorMessage = `Error ${response.status}: ${response.statusText}`;
                 }
