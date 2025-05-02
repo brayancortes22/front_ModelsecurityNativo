@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Formularios - ModelSecurity</title>
+    <!-- Estilos CSS desde CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body>
+    <div class="container mt-4" id="formsView">
+        <div class="list-header">
+            <h1 class="section-title">Gestión de Formularios</h1>
+            <div class="list-actions">
+                <button class="btn btn-secondary btn-back me-2">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </button>
+                <button id="btnNewForm" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i> Nuevo Formulario
+                </button>
+            </div>
+        </div>
+
+        <!-- Barra de búsqueda -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="search-container">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" id="searchForm" class="form-control" placeholder="Buscar formularios...">
+                                <button class="btn btn-outline-secondary" type="button" id="btnClearFormSearch">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                        <button class="btn btn-outline-secondary me-2" id="btnRefreshForms">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Refrescar
+                        </button>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-primary" id="btnFilterAllForms">Todos</button>
+                            <button class="btn btn-outline-success" id="btnFilterActiveForms">Activos</button>
+                            <button class="btn btn-outline-danger" id="btnFilterInactiveForms">Inactivos</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de formularios -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Lista de Formularios</h5>
+                <span class="badge bg-primary" id="formCount">0 formularios</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-hash me-1"></i> ID</th>
+                                <th><i class="bi bi-file-earmark-text me-1"></i> Nombre</th>
+                                <th><i class="bi bi-link-45deg me-1"></i> Ruta</th>
+                                <th><i class="bi bi-question-circle me-1"></i> Tipo de Cuestión</th>
+                                <th><i class="bi bi-circle-fill me-1"></i> Estado</th>
+                                <th class="text-center"><i class="bi bi-gear me-1"></i> Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="formsList">
+                            <!-- La lista de formularios se cargará dinámicamente -->
+                            <tr>
+                                <td colspan="6" class="text-center">
+                                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                    Cargando formularios...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <nav aria-label="Paginación">
+                    <ul class="pagination justify-content-center mb-0" id="formPagination">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Siguiente</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Modal para crear/editar formularios -->
+        <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <form id="formForm">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="formFormTitle">Nuevo Formulario</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-danger d-none" id="formFormMsg"></div>
+
+                            <input type="hidden" id="formId" name="id">
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="formName" class="form-label required-field">Nombre del Formulario</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-file-earmark-text"></i></span>
+                                        <input type="text" id="formName" name="name" class="form-control" required>
+                                    </div>
+                                    <div class="form-text">Nombre identificativo del formulario</div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="formRoute" class="form-label">Ruta</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                                        <input type="text" id="formRoute" name="route" class="form-control">
+                                    </div>
+                                    <div class="form-text">URL o ruta de acceso al formulario</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="formDescription" class="form-label">Descripción</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                                    <textarea id="formDescription" name="description" class="form-control"
+                                        rows="2"></textarea>
+                                </div>
+                                <div class="form-text">Descripción detallada del formulario</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="formCuestion" class="form-label required-field">Cuestión</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-question-circle"></i></span>
+                                        <textarea id="formCuestion" name="cuestion" class="form-control" rows="3" required></textarea>
+                                    </div>
+                                    <div class="form-text">Pregunta o cuestión principal del formulario</div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="formTypeCuestion" class="form-label required-field">Tipo de Cuestión</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-list-check"></i></span>
+                                        <select id="formTypeCuestion" name="typeCuestion" class="form-select" required>
+                                            <option value="">Seleccione un tipo...</option>
+                                            <option value="SELECCIÓN">Selección</option>
+                                            <option value="TEXTO">Texto libre</option>
+                                            <option value="NUMÉRICO">Numérico</option>
+                                            <option value="FECHA">Fecha</option>
+                                            <option value="MÚLTIPLE">Múltiple</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-text">Categoría o tipo de respuesta esperada</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="formAnswer" class="form-label required-field">Respuesta</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-chat-text"></i></span>
+                                    <textarea id="formAnswer" name="answer" class="form-control" rows="3" required></textarea>
+                                </div>
+                                <div class="form-text">Respuesta predeterminada o posibles opciones separadas por comas</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="formActive" name="active" checked>
+                                    <label class="form-check-label" for="formActive">Formulario activo</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar
+                            </button>
+                            <button type="submit" id="btnSaveForm" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de detalles del formulario -->
+        <div class="modal fade" id="formDetailsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Detalles del Formulario: <span id="formDetailsName"></span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información Básica</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th scope="row">ID:</th>
+                                                <td id="detailFormId"></td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Nombre:</th>
+                                                <td id="detailFormName"></td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Ruta:</th>
+                                                <td id="detailFormRoute"></td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Estado:</th>
+                                                <td id="detailFormStatus"></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-calendar-date me-2"></i>Fechas</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th scope="row">Creación:</th>
+                                                <td id="detailFormCreateDate"></td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Actualización:</th>
+                                                <td id="detailFormUpdateDate"></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-question-diamond me-2"></i>Información de Cuestión</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <h6>Descripción:</h6>
+                                            <p id="detailFormDescription" class="border-bottom pb-2"></p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h6>Cuestión:</h6>
+                                            <p id="detailFormCuestion" class="border-bottom pb-2"></p>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Tipo de Cuestión:</h6>
+                                                <p id="detailFormTypeCuestion" class="border-bottom pb-2"></p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Respuesta:</h6>
+                                                <p id="detailFormAnswer" class="border-bottom pb-2"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="btnEditFromDetails">
+                            <i class="bi bi-pencil me-1"></i> Editar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Scripts de la aplicación -->
+    <script src="../js/utils/constants.js"></script>
+    <script src="../js/utils/helpers.js"></script>
+    <script src="../js/api/api-config.js"></script>
+    <script src="../js/api/api-service.js"></script>
+    <script src="../js/api/auth-service.js"></script>
+    <script src="../js/api/form-service.js"></script>
+    <script src="../js/controllers/form-controller.js"></script>
+    <script>
+        // Inicializar controlador cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            FormController.init();
+        });
+    </script>
+</body>
+
+</html>
