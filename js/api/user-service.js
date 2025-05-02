@@ -329,4 +329,28 @@ const UserService = {
             throw error;
         }
     },
+
+    /**
+     * Asigna un rol específico a un usuario
+     * @param {number} userId - ID del usuario
+     * @param {number} rolId - ID del rol a asignar
+     * @returns {Promise<Object>} Resultado de la operación
+     */
+    async assignRol(userId, rolId) {
+        try {
+            // Crear objeto de asignación
+            const roleAssignment = {
+                id: 0,
+                userId: userId,
+                rolId: rolId,
+                active: true
+            };
+            
+            // Llamar al método existente para asignar roles
+            return await this.assignRoles(userId, roleAssignment);
+        } catch (error) {
+            console.error(`Error al asignar rol ${rolId} al usuario con ID ${userId}:`, error);
+            throw error;
+        }
+    },
 };

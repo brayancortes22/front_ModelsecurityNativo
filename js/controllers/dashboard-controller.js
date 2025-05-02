@@ -17,7 +17,8 @@ const DashboardController = {
         recentActivityList: null,
         refreshButton: null,
         viewAllActivityButton: null,
-        viewContainer: null // Añadimos esta propiedad para manejar el contenedor de vistas
+        viewContainer: null, // Añadimos esta propiedad para manejar el contenedor de vistas
+        logoutButton: null // Añadimos esta propiedad para manejar el botón de cerrar sesión
     },
     
     // Control de estado para evitar inicializaciones y cargas repetitivas
@@ -58,6 +59,7 @@ const DashboardController = {
         this.elements.refreshButton = document.getElementById('refreshDashboard');
         this.elements.viewAllActivityButton = document.getElementById('viewAllActivity');
         this.elements.viewContainer = document.getElementById('viewContainer');
+        this.elements.logoutButton = document.getElementById('btnLogoutDashboard');
         
         // Inicializar AppController si existe, sólo una vez
         if (typeof AppController !== 'undefined' && AppController !== null && !AppController.elements.viewContainer) {
@@ -92,6 +94,11 @@ const DashboardController = {
                 console.log('Ver todas las actividades...');
                 // Aquí podríamos abrir un modal con el historial completo
             });
+        }
+        
+        // Configurar botón de cerrar sesión
+        if (this.elements.logoutButton) {
+            this.elements.logoutButton.addEventListener('click', this.handleLogout.bind(this));
         }
         
         // Configurar eventos para los enlaces de navegación (una sola vez)
@@ -494,5 +501,32 @@ const DashboardController = {
             
             this.elements.recentActivityList.appendChild(row);
         });
-    }
+    },
+
+    /**
+     * Maneja el evento de cierre de sesión
+     */
+    async handleLogout() {
+        try {
+            console.log('Cerrando sesión desde el dashboard...');
+            Helpers.showLoading();
+            
+            // Utilizar el servicio de autenticación para cerrar sesión
+            if (typeof AuthController !== 'undefined' && AuthController.handleLogout) {
+                // Si AuthController está disponible, usar su método
+                await AuthController.handleLogout();
+            } else {
+                // Si no, implementar la lógica directamente
+                await AuthService.logout();
+                
+                // Redirigir al usuario a la página de login
+                window.location.href = '../index.html';
+            }
+            
+        } catch (error) {
+            console.error('Error al cerrar sesión:', error);
+            Helpers.showError('Error al cerrar sesión: ' + error.message);
+            Helpers.hideLoading();
+        }
+    },
 };

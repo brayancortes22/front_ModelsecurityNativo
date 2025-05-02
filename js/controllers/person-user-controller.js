@@ -236,7 +236,8 @@ const PersonUserController = {
                 typeIdentification: document.getElementById('typeIdentification').value,
                 numberIdentification: parseInt(document.getElementById('numberIdentification').value, 10),
                 signing: document.getElementById('signing').checked ? "true" : "",
-                active: true // Nueva persona siempre activa
+                active: true, // Nueva persona siempre activa
+                createDate: new Date().toISOString() // Añadir fecha de creación (requerida por la base de datos)
             };
             
             console.log('Enviando datos de persona:', personData);
@@ -259,19 +260,42 @@ const PersonUserController = {
             const savedUser = await UserService.createUser(userData);
             console.log('Usuario creado:', savedUser);
             
-            // Mostrar mensaje de éxito
-            Helpers.showMessage(
-                'Registro exitoso', 
-                `La persona "${personData.name}" y el usuario "${userData.username}" han sido creados correctamente.`,
-                'success'
-            );
+            // 3. Asignar el rol de "Aprendiz" (ID 1) al nuevo usuario
+            try {
+                const apprenticeRolId = 1; // ID del rol "Aprendiz"
+                await UserService.assignRol(savedUser.id, apprenticeRolId);
+                console.log(`Rol de Aprendiz (ID: ${apprenticeRolId}) asignado al usuario ${savedUser.username}`);
+            } catch (roleError) {
+                console.error('Error al asignar el rol de Aprendiz:', roleError);
+                // No interrumpimos el proceso por este error, pero lo registramos
+            }
+            
+            // Determinar si venimos desde la página de login o desde el dashboard
+            const isFromLogin = document.referrer.includes('index.html') || 
+                               !document.referrer.includes('/views/') ||
+                               window.location.search.includes('from=login');
+            
+            // Mostrar mensaje de éxito con información de redirección
+            let successMessage = `La persona "${personData.name}" y el usuario "${userData.username}" han sido creados correctamente.`;
+            
+            if (isFromLogin) {
+                successMessage += ' Serás redirigido a la página de inicio de sesión.';
+            }
+            
+            Helpers.showMessage('Registro exitoso', successMessage, 'success');
             
             // Limpiar formulario
             this.elements.personUserForm.reset();
             
             // Redirigir después de un breve retraso
             setTimeout(() => {
-                window.location.href = 'users.html';
+                if (isFromLogin) {
+                    // Si viene del login, redirigir a la página de inicio de sesión
+                    window.location.href = '../index.html';
+                } else {
+                    // Si viene del dashboard, redirigir a la gestión de usuarios
+                    window.location.href = 'users.html';
+                }
             }, 2000);
             
         } catch (error) {
