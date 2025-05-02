@@ -28,6 +28,7 @@ const API_CONFIG = {
             ACTIVATE: (id) => `/User/${id}/activate`,
             DEACTIVATE: (id) => `/User/${id}/soft`,
             WITH_PASSWORD: (id) => `/User/${id}/withpassword`, // Nuevo endpoint para obtener usuario con contraseña
+            USER_ROLES: (id) => `/User/${id}/roles`, // Endpoint para asignar roles a usuarios
         },
         
         // Personas
@@ -62,6 +63,22 @@ const API_CONFIG = {
             BY_ID: (id) => `/Form/${id}`,
             ACTIVATE: (id) => `/Form/${id}/activate`,
             DEACTIVATE: (id) => `/Form/${id}/soft`,
+        },
+        
+        // FormModule endpoints
+        FORM_MODULE: {
+            BASE: '/FormModule',
+            BY_ID: (id) => `/FormModule/${id}`,
+            ACTIVATE: (id) => `/FormModule/${id}/activate`,
+            DEACTIVATE: (id) => `/FormModule/${id}/soft`,
+        },
+        
+        // RolForm endpoints
+        ROL_FORM: {
+            BASE: '/RolForm',
+            BY_ID: (id) => `/RolForm/${id}`,
+            ACTIVATE: (id) => `/RolForm/${id}/activate`,
+            DEACTIVATE: (id) => `/RolForm/${id}/soft`,
         },
         
         // Registro de cambios

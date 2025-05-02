@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asignación de Formularios a Módulos - ModelSecurity</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body>
+    <div class="container mt-4" id="formModuleAssignmentView">
+        <div class="list-header">
+            <h1 class="section-title">Asignación de Formularios a Módulos</h1>
+            <div class="list-actions">
+                <button class="btn btn-secondary btn-back" onclick="window.location.href='dashboard.html'">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </button>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Lista de Módulos -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Módulos</h5>
+                        <div class="input-group mt-2">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="searchModule" class="form-control" placeholder="Buscar módulo...">
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group" id="modulesList">
+                            <!-- Los módulos se cargarán dinámicamente aquí -->
+                            <div class="text-center p-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Formularios -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Formularios Disponibles</h5>
+                        <div class="input-group mt-2">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="searchForm" class="form-control" placeholder="Buscar formulario...">
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group" id="formsList">
+                            <!-- Los formularios se cargarán dinámicamente aquí -->
+                            <div class="text-center p-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón para guardar asignación -->
+        <div class="row mt-3">
+            <div class="col-12 text-center">
+                <button id="btnSaveAssignment" class="btn btn-primary" disabled>
+                    <i class="bi bi-save me-2"></i> Guardar Asignación
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Scripts de la aplicación -->
+    <script src="../js/utils/constants.js"></script>
+    <script src="../js/utils/helpers.js"></script>
+    <script src="../js/api/api-config.js"></script>
+    <script src="../js/api/api-service.js"></script>
+    <script src="../js/api/auth-service.js"></script>
+    <script src="../js/api/module-service.js"></script>
+    <script src="../js/api/form-service.js"></script>
+    <script src="../js/controllers/form-module-assignment-controller.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            FormModuleAssignmentController.init();
+        });
+    </script>
+</body>
+
+</html>

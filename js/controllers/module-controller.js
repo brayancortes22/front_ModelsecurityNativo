@@ -273,7 +273,7 @@ const ModuleController = {
                 
             row.innerHTML = `
                 <td>${module.id}</td>
-                <td>${Helpers.escapeHtml(module.name)}</td>
+                <td>${Helpers.escapeHtml(module.name || 'Sin nombre')}</td>
                 <td>${Helpers.escapeHtml(description)}</td>
                 <td>${Helpers.createStatusBadge(module.active)}</td>
                 <td class="text-center">
@@ -281,8 +281,8 @@ const ModuleController = {
                         <button class="btn btn-primary btn-edit" title="Editar módulo">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn btn-info btn-forms text-white" title="Gestionar formularios">
-                            <i class="bi bi-list-check"></i>
+                        <button class="btn btn-success btn-forms text-white" title="Gestionar formularios">
+                            <i class="bi bi-grid-3x3-gap"></i>
                         </button>
                         <button class="btn ${module.active ? 'btn-warning' : 'btn-success'} btn-toggle-status" 
                             title="${module.active ? 'Desactivar' : 'Activar'} módulo">
@@ -301,7 +301,7 @@ const ModuleController = {
             });
             
             row.querySelector('.btn-forms').addEventListener('click', () => {
-                this.showModuleForms(module.id);
+                window.location.href = `form-module-assignment.html?moduleId=${module.id}`;
             });
             
             row.querySelector('.btn-toggle-status').addEventListener('click', () => {

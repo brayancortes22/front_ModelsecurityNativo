@@ -166,7 +166,7 @@ const UserService = {
      */
     async getUserRoles(id) {
         try {
-            return await ApiService.get(`${API_CONFIG.ENDPOINTS.USER.BY_ID(id)}/roles`);
+            return await ApiService.get(API_CONFIG.ENDPOINTS.USER.USER_ROLES(id));
         } catch (error) {
             console.error(`Error al obtener los roles del usuario con ID ${id}:`, error);
             throw error;
@@ -176,14 +176,15 @@ const UserService = {
     /**
      * Asigna roles a un usuario
      * @param {number} userId - ID del usuario
-     * @param {Array<number>} rolIds - IDs de los roles a asignar
+     * @param {Object} roleAssignment - Objeto con la estructura { id: 0, userId: number, rolId: number }
      * @returns {Promise<Object>} Resultado de la operación
      */
-    async assignRoles(userId, rolIds) {
+    async assignRoles(userId, roleAssignment) {
         try {
-            return await ApiService.post(`${API_CONFIG.ENDPOINTS.USER.BY_ID(userId)}/roles`, { rolIds });
+            // Utilizamos el endpoint del controlador UserRol en el backend
+            return await ApiService.post(`${API_CONFIG.BASE_URL}/UserRol`, roleAssignment);
         } catch (error) {
-            console.error(`Error al asignar roles al usuario con ID ${userId}:`, error);
+            console.error(`Error al asignar rol al usuario con ID ${userId}:`, error);
             throw error;
         }
     },
