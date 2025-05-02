@@ -190,6 +190,20 @@ const UserService = {
     },
 
     /**
+     * Elimina un rol asignado a un usuario
+     * @param {number} userRolId - ID de la relación UserRol a eliminar
+     * @returns {Promise<Object>} Resultado de la operación
+     */
+    async removeRole(userRolId) {
+        try {
+            return await ApiService.delete(`${API_CONFIG.BASE_URL}/UserRol/${userRolId}`);
+        } catch (error) {
+            console.error(`Error al eliminar el rol asignado con ID ${userRolId}:`, error);
+            throw error;
+        }
+    },
+
+    /**
      * Desactiva un usuario
      * @param {number} id - ID del usuario
      * @returns {Promise<Object>} Resultado de la operación
